@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Learning to Play Blackjack with an Evolutionary Algorithm
-description: with background image
+description: with background iage
 img: assets/img/12.jpg
 importance: 1
 category: fun
