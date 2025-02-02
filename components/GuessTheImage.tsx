@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
-// Mock images with classes: Replace with your actual image paths.
 const images = [
   { src: '/static/images/image1.jpg', class: 'c' },
   { src: '/static/images/image2.jpg', class: 'b' },
@@ -24,7 +23,7 @@ const GuessTheImage = () => {
     // Move to the next image
     if (currentImageIndex < images.length -1) {
       setCurrentImageIndex(prevIndex => prevIndex + 1);
-      setSliderValue(1); // Reset the slider for the next guess
+      setSliderValue(1); 
     } else {
       const score = calculateDistribution();
       setAucScore(score);
@@ -32,7 +31,7 @@ const GuessTheImage = () => {
   };
 
   const calculateAUCScore = (classCScores, classBScores) => {
-    // Combine scores with labels (1 for 'c', 0 for 'b')
+    // 1 for 'c', 0 for 'b'
     const filteredClassCScores = classCScores.filter(score => score !== 0);
     console.log("class c", filteredClassCScores)
     console.log("class b", classBScores)
@@ -40,7 +39,6 @@ const GuessTheImage = () => {
       classBScores.map(score => ({ score, label: 0 }))
     );
   
-    // Sort by score in descending order
     labels.sort((a, b) => b.score - a.score);
     console.log(labels)
   
@@ -55,13 +53,11 @@ const GuessTheImage = () => {
     for (const { score, label } of labels) {
       if (label === 1) tp++;
       else fp++;
-  
-      // Calculate TPR and FPR
       tpr.push(tp / totalPositive);
       fpr.push(fp / totalNegative);
     }
   
-    // Calculate AUC using the trapezoidal rule
+    // trapezoidal rule
     let auc = 0;
     for (let i = 1; i < tpr.length; i++) {
       auc += (fpr[i] - fpr[i - 1]) * (tpr[i] + tpr[i - 1]) / 2;
@@ -124,7 +120,6 @@ const GuessTheImage = () => {
     const maxScore = 5; // Scores range from 1 to 5
     console.log("Distribution Data:", distributionData);
   
-    // Prepare the chart data based on the existing structure
     for (let i = 1; i <= maxScore; i++) {
       // Find the distribution object for the current score
       const distributionEntry = distributionData.find(entry => entry.score === i);
@@ -132,8 +127,7 @@ const GuessTheImage = () => {
       // If found, use its values; otherwise default to zeros
       const cCount = distributionEntry ? distributionEntry.c : 0;
       const bCount = distributionEntry ? distributionEntry.b : 0;
-      
-      // Push the data object with the counts
+
       data.push({ score: i, c: cCount, b: bCount, cFill: distributionEntry ? distributionEntry.cFill : 0, bFill: distributionEntry ? distributionEntry.bFill : 0});
     }
   
@@ -195,16 +189,16 @@ const GuessTheImage = () => {
                 type="monotone" 
                 dataKey="c" 
                 stroke="#00C49F" 
-                fill="#00C49F" // This fills the area under the curve
-                fillOpacity={0.2} // Semi-transparent filling
+                fill="#00C49F" 
+                fillOpacity={0.2} 
                 strokeWidth={3} 
                 />
                 <Area 
                 type="monotone" 
                 dataKey="b" 
                 stroke="#FFBB28" 
-                fill="#FFBB28" // This fills the area under the curve
-                fillOpacity={0.2} // Semi-transparent filling
+                fill="#FFBB28" 
+                fillOpacity={0.2} 
                 strokeWidth={3} 
                 />
                 <Line 
