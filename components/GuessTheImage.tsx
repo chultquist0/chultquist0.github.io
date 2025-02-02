@@ -192,8 +192,8 @@ const GuessTheImage = () => {
               {' '}
               Assign this jet a b-tagging score:
             </label>
-            <input id="jetScore" type="text" />
             <input
+              id="jetScore"
               type="range"
               min="1"
               max="5"
