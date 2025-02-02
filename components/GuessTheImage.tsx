@@ -8,12 +8,28 @@ const images = [
   { src: '/static/images/image2.jpg', class: 'b' },
 ];
 
+type ChartDataItem = {
+  score: number;
+  c: number;
+  b: number;
+  cFill: number;
+  bFill: number;
+  };
+
+  type DistributionEntry = {
+    score: number;
+    c: number;
+    b: number;
+    cFill: number;
+    bFill: number;
+    };
+
 const GuessTheImage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sliderValue, setSliderValue] = useState(1);
   const [userGuesses, setUserGuesses] = useState<{ score: number; class: string }[]>([]);
   const [finished, setFinished] = useState(false);
-  const [distributionData, setDistributionData] = useState([]);
+  const [distributionData, setDistributionData] = useState<ChartDataItem[]>([]);
   const [aucScore, setAucScore] = useState(-1); 
 
   const handleNextImage = () => {
@@ -70,7 +86,12 @@ const GuessTheImage = () => {
   };
 
   const calculateDistribution = () => {
-    const scores = { c: [], b: [] };
+    interface Scores {
+      c: number[];
+      b: number[];
+      }
+
+    const scores: Scores = { c: [], b: [] };
     userGuesses.forEach(guess => {
       if (guess.class === 'c') {
         scores.c.push(guess.score);
@@ -81,7 +102,8 @@ const GuessTheImage = () => {
     scores.c.push(images[currentImageIndex].class === 'c' ? sliderValue : 0);
     scores.b.push(images[currentImageIndex].class === 'b' ? sliderValue : 0);
 
-    const chartData = [];
+    
+    const chartData: ChartDataItem[] = [];
     const maxScore = 5;
     let cumulativeC = 0;
     let cumulativeB = 0;
@@ -116,7 +138,7 @@ const GuessTheImage = () => {
   };
 
   const prepareChartData = () => {
-    const data = [];
+    const data: DistributionEntry[] = [];
     const maxScore = 5; // Scores range from 1 to 5
     console.log("Distribution Data:", distributionData);
   
