@@ -5,12 +5,16 @@ import type { MDXComponents } from 'mdx/types'
 import Image from './Image'
 import CustomLink from './Link'
 import TableWrapper from './TableWrapper'
+import DonutChart from 'components/DonutChart'
+import GuessTheImage from 'components/GuessTheImage'
 
 export const components: MDXComponents = {
   Image,
   TOCInline,
   a: CustomLink,
   pre: Pre,
+  DonutChart,
+  GuessTheImage,
   table: TableWrapper,
   BlogNewsletterForm,
 }

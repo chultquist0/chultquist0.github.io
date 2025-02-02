@@ -7,20 +7,22 @@ interface Project {
 
 const projectsData: Project[] = [
   {
-    title: 'A Search Engine',
-    description: `What if you could look up any information in the world? Webpages, images, videos
-    and more. Google has many features to help you find exactly what you're looking
-    for.`,
-    imgSrc: '/static/images/google.png',
-    href: 'https://www.google.com',
+    title: 'ATLAS',
+    description: `All Things Leave A Smudge!`,
+    imgSrc: '/static/images/atlas.png',
+    href: 'https://www.physics.lbl.gov/atlas/',
   },
   {
-    title: 'The Time Machine',
-    description: `Imagine being able to travel back in time or to the future. Simple turn the knob
-    to the desired date and press "Go". No more worrying about lost keys or
-    forgotten headphones with this simple yet affordable solution.`,
-    imgSrc: '/static/images/time-machine.jpg',
-    href: '/blog/the-time-machine',
+    title: 'Evolutionary Blackjack',
+    description: `What if machine learning were as slow and error prone as real-life evolution? Could we still teach a computer when to double down? `,
+    imgSrc: '/static/images/blackjack.gif',
+    href: 'https://github.com/chultquist0/cmse202group11',
+  },
+  {
+    title: 'Randomized Circuits',
+    description: `A random grid array of resistors, capacitors, inductors, and diodes ... much to think about `,
+    imgSrc: '/static/images/sniping.png',
+    href: 'https://github.com/chultquist0/pairproject482/blob/main/Circuit.ipynb',
   },
 ]
 
