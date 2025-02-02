@@ -188,7 +188,10 @@ const GuessTheImage = () => {
             {currentImageIndex + 1} / {images.length}
           </p>
           <div className="mb-4">
-            <label className="mb-2 block" htmlFor="jetScore"> Assign this jet a b-tagging score:</label>
+            <label className="mb-2 block" htmlFor="jetScore">
+              {' '}
+              Assign this jet a b-tagging score:
+            </label>
             <input id="jetScore" type="text" />
             <input
               type="range"
