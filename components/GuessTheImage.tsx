@@ -20,7 +20,7 @@ const images = [
   { src: '/static/images/image4.jpg', class: 'b' },
   { src: '/static/images/image3.jpg', class: 'c' },
   { src: '/static/images/image2.jpg', class: 'c' },
-  { src: '/static/images/image1.jpg', class: 'b' }
+  { src: '/static/images/image1.jpg', class: 'b' },
 ]
 
 type ChartDataItem = {
