@@ -73,7 +73,7 @@ export async function generateMetadata(props: {
   }
 }
 
-export async function generateStaticParams () {
+export async function generateStaticParams() {
   return allBlogs.map((p) => ({ slug: p.slug.split('/').map((name) => decodeURI(name)) }))
 }
 
