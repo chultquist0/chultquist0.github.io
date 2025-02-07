@@ -73,9 +73,12 @@ export async function generateMetadata(props: {
   }
 }
 
-export const generateStaticParams = () => [
-  { slug: p.slug.split('/').map((name) => decodeURI(name)) },
-]
+export const generateStaticParams = async () => {
+  // Ensure allBlogs is an array and provide a default value if it's empty or undefined
+  const blogs = allBlogs && allBlogs.length > 0 ? allBlogs : [{ slug: 'default-page' }]
+
+  return blogs.map((p) => ({ slug: p.slug.split('/').map((name) => decodeURI(name)) }))
+}
 
 export default async function Page(props: { params: Promise<{ slug: string[] }> }) {
   const params = await props.params
