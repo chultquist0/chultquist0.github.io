@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Crossword </title>
+    <link rel="icon" href="/static/favicons/favicon.ico" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            
+        }
+
+        html, body {
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #current-clue {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: black;
+            padding: 10px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <p id="current-clue"></p>
+    <div id="grid">
+        <script src="flipFace.js"></script>
+        <script src="solve.js"></script>
+        <script src="cube.js"></script>
+    </div>
+</body>
+
+</html>
