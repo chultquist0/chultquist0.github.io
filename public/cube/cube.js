@@ -1,11 +1,9 @@
-// Create a scene
-
 // Bucket List
 // title stuff
-// reset camera button
-// all correct animation
-// clicking on clue allows you to 
+// "all correct/you've won" animation
 // numbers less fuzzy
+// works on mobile?
+// How to create more than one? 
 
 
 const scene = new THREE.Scene();
@@ -24,6 +22,15 @@ const REVERSE_SEQDIR = {
     2: { dir: "y", name: "deep" },
     0: { dir: "x", name: "across" },
     1: { dir: "z", name: "down" },
+};
+
+const faceRotations = {
+    front: { x: -1.1, y: 0, z: 0 },
+    back: { x: -.9, y: Math.PI, z: 0 },
+    left: { x: -1, y: 1.5, z: 0 },
+    right: { x: -.9, y: -1.5, z: 0 },
+    top: { x: 0.2, y: 0, z: 0 },
+    bottom: { x: -2.6, y: 0, z: 0 }
 };
 
 // Create a camera
@@ -58,6 +65,8 @@ function highlightClue(clueId) {
     document.querySelectorAll('.clue').forEach(clue => {
         clue.classList.remove('selected');
     });
+
+    console.log("highlighting", clueId)
 
     // Highlight the selected clue
     const selectedClue = document.querySelector(`.clue[data-clue-id="${clueId}"]`);
@@ -96,6 +105,119 @@ function get_selected_clue() {
     }
 }
 
+function resetCameraView( rotation = { x: 0, y: 0, z: 0 }) {
+    camera.position.set(2, 8, 4);
+    camera.lookAt(new THREE.Vector3(2, 0, 0)); // Ensure lookAt uses a Vector3
+
+    gsap.to(camera, {
+        duration: 2,
+        fov: 75,
+        onUpdate: () => {
+            camera.updateProjectionMatrix();
+        }
+    });
+    
+    gsap.to(labelgroup.rotation, {
+        duration: 1,
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z
+    });
+    gsap.to(group.rotation, {
+        duration: 1,
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z
+    });
+    gsap.to(axesHelper.rotation, {
+        duration: 1,
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z
+    });
+
+}
+
+function getClosestCubeForClue(clueNumber) {
+    for (let x = 0; x < cubenumber.length; x++) {
+        for (let y = 0; y < cubenumber[x].length; y++) {
+            for (let z = 0; z < cubenumber[x][y].length; z++) {
+                if (cubenumber[x][y][z] === clueNumber) {
+                    console.log(x,y,z)
+                    // Return the cube object with the corresponding grid position
+                    return group.children.find(cube => 
+                        cube.grid_pos.x === z && 
+                        cube.grid_pos.y === 3-x && 
+                        cube.grid_pos.z === y
+                    );
+                }
+            }
+        }
+    }
+    return null;
+}
+
+// Function to reset view on clue click
+function resetViewAndHighlight(clueId) {
+    console.log("Logging",clueId);
+    const currentClueId = clueId; 
+
+    //resetCameraView();
+    console.log("Logging2", clueId)
+    console.log("Logging3",currentClueId);
+    
+    highlightClue(clueId);
+
+    const direction = clueId.split('-')[0];
+    const number = parseInt(clueId.split('-')[1]);
+    console.log("Number",number)
+    const closest_cube = getClosestCubeForClue(number);
+    seq_dir = SEQDIR[direction];
+    const face = base_face[direction][number];
+    const rotation = faceRotations[face] || { x: 0, y: 0, z: 0 };
+    resetCameraView(rotation);
+    
+    console.log(closest_cube);
+    if (!closest_cube) return;
+
+    selected_seq = [];
+    for (pot_cube of group.children) {
+        if (seq_dir == 0) {
+            if (
+                pot_cube.grid_pos.y == closest_cube.grid_pos.y &&
+                pot_cube.grid_pos.z == closest_cube.grid_pos.z
+            ) {
+                selected_seq.push(pot_cube);
+            }
+        } else if (seq_dir == 1) {
+            if (
+                pot_cube.grid_pos.y == closest_cube.grid_pos.y &&
+                pot_cube.grid_pos.x == closest_cube.grid_pos.x
+            ) {
+                selected_seq.push(pot_cube);
+            }
+        } else if (seq_dir == 2) {
+            if (
+                pot_cube.grid_pos.z == closest_cube.grid_pos.z &&
+                pot_cube.grid_pos.x == closest_cube.grid_pos.x
+            ) {
+                selected_seq.push(pot_cube);
+            }
+        }
+    }
+
+    if (seq_dir == SEQDIR.x)
+        selected_seq = selected_seq.sort((a, b) => a.grid_pos.x - b.grid_pos.x);
+    if (seq_dir == SEQDIR.z)
+        selected_seq = selected_seq.sort((a, b) => a.grid_pos.z - b.grid_pos.z);
+    if (seq_dir == SEQDIR.y)
+        selected_seq = selected_seq.sort((a, b) => b.grid_pos.y - a.grid_pos.y);
+    for (i in selected_seq) {
+        if (selected_seq[i] == closest_cube) selected_cube_index = parseInt(i);
+    }
+    refresh_colors();
+
+}
 
 function refresh_colors() {
     for (cube of group.children) {
@@ -266,6 +388,7 @@ function populateClues() {
         clueElement.className = 'clue';
         clueElement.textContent = `${key}. ${hints.y[key]}`;
         clueElement.dataset.clueId = `y-${key}`;
+        clueElement.addEventListener('click', () => resetViewAndHighlight(`y-${key}`));
         cluesYContainer.appendChild(clueElement);
     });
 
@@ -274,6 +397,7 @@ function populateClues() {
         clueElement.className = 'clue';
         clueElement.textContent = `${key}. ${hints.x[key]}`;
         clueElement.dataset.clueId = `x-${key}`;
+        clueElement.addEventListener('click', () => resetViewAndHighlight(`x-${key}`));
         cluesXContainer.appendChild(clueElement);
     });
 
@@ -282,6 +406,7 @@ function populateClues() {
         clueElement.className = 'clue';
         clueElement.textContent = `${key}. ${hints.z[key]}`;
         clueElement.dataset.clueId = `z-${key}`;
+        clueElement.addEventListener('click', () => resetViewAndHighlight(`z-${key}`));
         cluesZContainer.appendChild(clueElement);
     });
 }
@@ -559,20 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
     preventScrollPropagation();
     highlightClue('x-1');
 
-    // Reset Camera View
-    function resetCameraView() {
-        console.log('button clicked')
-        camera.position.set(2, 8, 4);
-        console.log(`Camera Position: x=${camera.position.x}, y=${camera.position.y}, z=${camera.position.z}`); 
-        camera.lookAt(new THREE.Vector3(2, 0, 0));
-        camera.fov = 75;
-        camera.updateProjectionMatrix();
-        labelgroup.rotation.set(0, 0, 0);
-        group.rotation.set(0, 0, 0);
-        axesHelper.rotation.set(0, 0, 0);
-    }
-
-    document.getElementById('reset-camera-button').addEventListener('click', resetCameraView);
+    document.getElementById('reset-camera-button').addEventListener('click', ()=>resetCameraView());
 });
 
 

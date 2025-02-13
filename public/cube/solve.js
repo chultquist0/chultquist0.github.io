@@ -69,6 +69,51 @@ const answer = [
       22: "Class struggle?",
     },
   };
+
+  const base_face = {
+    y: {
+      1: "back",
+      2: "back",
+      3: "back",
+      4: "back",
+      5: "left",
+      6: "right",
+      7: "left",
+      8: "right",
+      9: "front",
+      10: "front",
+      11: "front",
+      12: 'front',
+    },
+    x: {
+      1: "top",
+      5: "top",
+      7: "top",
+      9: "top",
+      13: "back",
+      15: "front",
+      16: "back",
+      18: "front",
+      19: "back",
+      23: "bottom",
+      24: "bottom",
+      25: "front",
+    },
+    z: {
+      1: "top",
+      2: "top",
+      3: "top",
+      4: "top",
+      13: "left",
+      14: "right",
+      16: "left",
+      17: "right",
+      19: "left",
+      20: "bottom",
+      21: "bottom",
+      22: "right",
+    },
+  };
   
   const cubenumber = [
     [
