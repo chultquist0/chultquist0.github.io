@@ -11,16 +11,30 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            
-        }
-
-        html, body {
             overflow: hidden;
+            font-family: 'Arial', sans-serif; 
+            display: flex;
+            background-color: #eeeeee; 
         }
 
         canvas {
             display: block;
         }
+
+        #grid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #grid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
 
         #current-clue {
             position: absolute;
@@ -29,6 +43,54 @@
             color: black;
             padding: 10px;
             font-size: 20px;
+        }
+
+        #clues-container {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 25%;
+            height: 100%;
+            border-left: 1px solid #ccc;
+            padding: 10px;
+            background-color: white;
+            overflow-y: auto;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .clues-section {
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        .clues-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+
+
+        .clue {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #ffffff; /* White background */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            transition: background-color 0.3s, box-shadow 0.3s;
+            font-size: 1.1em;
+        }
+
+        .clue:hover {
+            background-color: #f9f9f9; /* Slightly darker on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+        }
+
+        .clue.selected {
+            background-color: hsl(209, 56%, 45%); /* Highlight color for selected clue */
+            color: #ffffff; /* White text for contrast */
         }
     </style>
 </head>
@@ -40,6 +102,9 @@
         <script src="flipFace.js"></script>
         <script src="solve.js"></script>
         <script src="cube.js"></script>
+    </div>
+    <div id="clues-container">
+        <div id="clues"></div>
     </div>
 </body>
 

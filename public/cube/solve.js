@@ -132,3 +132,4 @@ const answer = [
     }
     return true;
   }
+  window.hints = hints;

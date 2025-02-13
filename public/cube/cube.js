@@ -1,11 +1,10 @@
 // Create a scene
 
-//bucket list
-// scroll to zoom
-// update numbers
-// add clue bar
-// match current sube seq with clue you are on
-// reset button
+// Bucket List
+// title stuff
+// reset camera button
+// all correct animation
+// 
 
 
 const scene = new THREE.Scene();
@@ -33,11 +32,11 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.z = 6;
-camera.position.y = 6;
-camera.position.x = 0;
+camera.position.z = 4;
+camera.position.y = 8;
+camera.position.x = 2;
 
-camera.lookAt(0, 0, 0);
+camera.lookAt(2, 0, 0);
 
 // Create a renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -52,6 +51,21 @@ const group = new THREE.Group();
 // group.rotation.y = Math.PI / 4;
 // group.rotation.z = Math.PI / 4;
 const labelgroup = new THREE.Group();
+
+function highlightClue(clueId) {
+    // Remove highlight from all clues
+    document.querySelectorAll('.clue').forEach(clue => {
+        clue.classList.remove('selected');
+    });
+
+    // Highlight the selected clue
+    const selectedClue = document.querySelector(`.clue[data-clue-id="${clueId}"]`);
+    console.log('highlight selected clue=',selectedClue)
+    if (selectedClue) {
+        selectedClue.classList.add('selected');
+    }
+}
+
 
 function get_selected_clue() {
     for (let i = 0; i < gridSize; i++) {
@@ -68,6 +82,7 @@ function get_selected_clue() {
         }
     }
 }
+
 
 function refresh_colors() {
     for (cube of group.children) {
@@ -86,8 +101,36 @@ function refresh_colors() {
 
     const currentClueP = document.getElementById("current-clue");
 
-    currentClueP && (currentClueP.innerText = get_selected_clue());
+    if (currentClueP) {
+        currentClueP.innerText = get_selected_clue();
+    }
+
+    const selectedClue = get_selected_clue();
+    console.log('Selected Clue:', selectedClue); // Add this line for debugging
+    if (selectedClue) {
+        const clueParts = selectedClue.split(' ');
+        if (clueParts.length >= 2) {
+            const clueNumber = clueParts[0];
+            const directionName = clueParts[1].toLowerCase().replace(/:$/, '');;
+            console.log(clueNumber, directionName)
+            
+            // Find the direction key (x, y, z) based on the direction name
+            let directionKey = '';
+            for (const [key, value] of Object.entries(REVERSE_SEQDIR)) {
+                if (value.name === directionName) {
+                    directionKey = value.dir;
+                    break;
+                }
+            }
+
+            const clueId = `${directionKey}-${clueNumber}`; // Use direction key (x, y, z) as prefix
+            console.log(clueId)
+            highlightClue(clueId);
+        }
+    }
 }
+
+
 
 
 for (let x = 0; x < gridSize; x++) {
@@ -169,11 +212,68 @@ for (let x = 0; x < gridSize; x++) {
 
 //scene.add(group)
 const axesHelper = new THREE.AxesHelper(5);
-scene.add(axesHelper);
+//scene.add(axesHelper);
 scene.add(group);
 scene.add(labelgroup);
 
 refresh_colors();
+
+
+
+function populateClues() {
+    const cluesContainer = document.getElementById('clues');
+    if (!cluesContainer) {
+        console.error('Clues container not found');
+        return;
+    }
+
+    cluesContainer.innerHTML = `
+        <section class="clues-section">
+            <header class="clues-header">Across</header>
+            <div id="clues-x" class="clues-list"></div>    
+        </section>
+        <section class="clues-section">
+            <header class="clues-header">Down</header>
+            <div id="clues-z" class="clues-list"></div>
+        </section>
+        <section class="clues-section">
+            <header class="clues-header">Deep</header>
+            <div id="clues-y" class="clues-list"></div>
+        </section>
+    `;
+
+    const cluesYContainer = document.getElementById('clues-y');
+    const cluesXContainer = document.getElementById('clues-x');
+    const cluesZContainer = document.getElementById('clues-z');
+
+    const hints = window.hints;
+
+    Object.keys(hints.y).forEach(key => {
+        const clueElement = document.createElement('div');
+        clueElement.className = 'clue';
+        clueElement.textContent = `${key}. ${hints.y[key]}`;
+        clueElement.dataset.clueId = `y-${key}`;
+        cluesYContainer.appendChild(clueElement);
+    });
+
+    Object.keys(hints.x).forEach(key => {
+        const clueElement = document.createElement('div');
+        clueElement.className = 'clue';
+        clueElement.textContent = `${key}. ${hints.x[key]}`;
+        clueElement.dataset.clueId = `x-${key}`;
+        cluesXContainer.appendChild(clueElement);
+    });
+
+    Object.keys(hints.z).forEach(key => {
+        const clueElement = document.createElement('div');
+        clueElement.className = 'clue';
+        clueElement.textContent = `${key}. ${hints.z[key]}`;
+        clueElement.dataset.clueId = `z-${key}`;
+        cluesZContainer.appendChild(clueElement);
+    });
+}
+
+
 
 // Mouse control variables
 let isDragging = false;
@@ -429,6 +529,24 @@ renderer.domElement.addEventListener("click", (event) => {
     refresh_colors();
 });
 
+// Prevent scroll event on clues container from affecting the camera
+function preventScrollPropagation() {
+    const cluesContainer = document.getElementById('clues-container');
+    if (!cluesContainer) {
+        console.error('Clues container not found');
+        return;
+    }
+    cluesContainer.addEventListener('wheel', function(event) {
+        event.stopPropagation();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    populateClues();
+    preventScrollPropagation();
+    highlightClue('x-1');
+});
+
 function onScroll(event) {
     // Adjust camera field of view based on the scroll direction
     camera.fov += event.deltaY * 0.05;
@@ -438,6 +556,10 @@ function onScroll(event) {
 }
 
 window.addEventListener("wheel", onScroll);
+
+window.onload = populateClues;
+window.onload = highlightClue('x-1');
+
 
 // Render loop
 function animate() {
