@@ -1,3 +1,6 @@
+const date = "Thursday, Feb. 12, 2025"
+const author = "Charlie Hultquist"
+
 const answer = [
     [
       ["S", "C", "A", "M"],
@@ -142,39 +145,5 @@ const answer = [
     ],
   ];
   
-  const fakeAnswer = [
-    [
-      ["f", "f", "f", "f"],
-      ["f", "f", "f", "f"],
-      ["f", "f", "f", "f"],
-      ["f", "f", "f", "f"],
-    ],
-    [
-      ["f", "f", "f", "f"],
-      ["f", "", "", "f"],
-      ["f", "", "", "f"],
-      ["f", "f", "f", "f"],
-    ],
-    [
-      ["f", "f", "f", "f"],
-      ["f", "", "", "f"],
-      ["f", "", "", "f"],
-      ["f", "f", "f", "f"],
-    ],
-    [
-      ["f", "f", "f", "f"],
-      ["f", "f", "f", "f"],
-      ["f", "f", "f", "f"],
-      ["f", "f", "f", "f"],
-    ],
-  ];
-  
-  function do_cubes_match(cubes) {
-    for (cube of cubes) {
-      const matches =
-        cube.letter == answer[cube.grid_pos.z][cube.grid_pos.y][cube.grid_pos.x];
-      if (!matches) return false;
-    }
-    return true;
-  }
+
   window.hints = hints;

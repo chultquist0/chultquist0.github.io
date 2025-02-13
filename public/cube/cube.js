@@ -1,9 +1,8 @@
 // Bucket List
-// title stuff
-// "all correct/you've won" animation
 // numbers less fuzzy
 // works on mobile?
-// How to create more than one? 
+// Workflow to create >1 game -- need to generalize to 4x4 -> NxN cube
+// arrow that shows which direction is being filled
 
 
 const scene = new THREE.Scene();
@@ -11,6 +10,8 @@ const scene = new THREE.Scene();
 let selected_seq = [];
 let selected_cube_index = 0;
 let seq_dir = 0;
+document.getElementById('date').textContent = date;
+document.getElementById('author').textContent = author;
 
 const SEQDIR = {
     y: 2,
@@ -538,6 +539,39 @@ document.addEventListener("keydown", (event) => {
     refresh_colors();
 });
 
+function triggerConfetti() {
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        useWorker: false // Use the lite version without Web Workers
+    });
+}
+
+function showCorrectPopup() {
+    const popup = document.getElementById('popupCorrect');
+    popup.classList.remove('hidden');
+    popup.classList.add('jiggle');
+    setTimeout(() => {
+        popup.classList.remove('jiggle');
+    }, 500); // Remove jiggle class after animation
+    setTimeout(() => {
+        popup.classList.add('hidden');
+    }, 3000); // Hide after 3 seconds
+}
+
+function showIncorrectPopup() {
+    const popup = document.getElementById('popupIncorrect');
+    popup.classList.remove('hidden');
+    popup.classList.add('jiggle');
+    setTimeout(() => {
+        popup.classList.remove('jiggle');
+    }, 500); // Remove jiggle class after animation
+    setTimeout(() => {
+        popup.classList.add('hidden');
+    }, 3000); // Hide after 3 seconds
+}
+
 document.addEventListener("keypress", (event) => {
     const cube = selected_seq[selected_cube_index];
     const faceMaterial = cube.material;
@@ -572,9 +606,62 @@ document.addEventListener("keypress", (event) => {
 
     selected_cube_index = (selected_cube_index + dir) % gridSize;
     refresh_colors();
-});
-// Add event listener for mouse click
 
+    if (isCrosswordCorrect()) {
+        triggerConfetti();
+        showCorrectPopup();
+    }
+    else if (isCrosswordFilled()){
+        showIncorrectPopup();
+    }
+});
+
+function isCrosswordFilled(){
+    let filled_count=0
+    for (let x = 0; x < answer.length; x++) {
+        for (let y = 0; y < answer[x].length; y++) {
+            for (let z = 0; z < answer[x][y].length; z++) {
+                const cube = group.children.find(cube =>
+                    cube.grid_pos.x === z && 
+                    cube.grid_pos.y === 3-x && 
+                    cube.grid_pos.z === y
+                );
+                if (cube && cube.letter.toUpperCase() != "") {
+                    filled_count++;
+                }
+            }
+        }
+    }
+    if (filled_count!==56){
+        return false;
+    }
+    return true;
+}
+
+function isCrosswordCorrect() {
+    let correct_count=0
+    for (let x = 0; x < answer.length; x++) {
+        for (let y = 0; y < answer[x].length; y++) {
+            for (let z = 0; z < answer[x][y].length; z++) {
+                const cube = group.children.find(cube =>
+                    cube.grid_pos.x === z && 
+                    cube.grid_pos.y === 3-x && 
+                    cube.grid_pos.z === y
+                );
+                if (cube && cube.letter.toUpperCase() === (answer[x][y][z]).toUpperCase()) {
+                    correct_count++;
+                }
+            }
+        }
+    }
+    if (correct_count!==56){
+        return false;
+    }
+    return true;
+}
+
+
+// Add event listener for mouse click
 renderer.domElement.addEventListener("click", (event) => {
     // Calculate mouse position relative to the canvas
     if (isDragging) return;
