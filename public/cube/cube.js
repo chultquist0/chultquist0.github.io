@@ -4,7 +4,8 @@
 // title stuff
 // reset camera button
 // all correct animation
-// 
+// clicking on clue allows you to 
+// numbers less fuzzy
 
 
 const scene = new THREE.Scene();
@@ -63,6 +64,18 @@ function highlightClue(clueId) {
     console.log('highlight selected clue=',selectedClue)
     if (selectedClue) {
         selectedClue.classList.add('selected');
+
+        // Scroll the selected clue into view
+        const cluesContainer = document.getElementById('clues-container');
+        const containerHeight = cluesContainer.clientHeight;
+        const clueHeight = selectedClue.clientHeight;
+        const offsetTop = selectedClue.offsetTop - cluesContainer.offsetTop;
+        const scrollPosition = offsetTop - (containerHeight / 2) + (clueHeight / 2);
+        
+        cluesContainer.scrollTo({
+            top: scrollPosition,
+            behavior: 'smooth'
+        });
     }
 }
 
@@ -545,7 +558,24 @@ document.addEventListener('DOMContentLoaded', () => {
     populateClues();
     preventScrollPropagation();
     highlightClue('x-1');
+
+    // Reset Camera View
+    function resetCameraView() {
+        console.log('button clicked')
+        camera.position.set(2, 8, 4);
+        console.log(`Camera Position: x=${camera.position.x}, y=${camera.position.y}, z=${camera.position.z}`); 
+        camera.lookAt(new THREE.Vector3(2, 0, 0));
+        camera.fov = 75;
+        camera.updateProjectionMatrix();
+        labelgroup.rotation.set(0, 0, 0);
+        group.rotation.set(0, 0, 0);
+        axesHelper.rotation.set(0, 0, 0);
+    }
+
+    document.getElementById('reset-camera-button').addEventListener('click', resetCameraView);
 });
+
+
 
 function onScroll(event) {
     // Adjust camera field of view based on the scroll direction
@@ -554,6 +584,8 @@ function onScroll(event) {
     camera.fov = Math.max(20, Math.min(100, camera.fov));
     camera.updateProjectionMatrix();
 }
+
+
 
 window.addEventListener("wheel", onScroll);
 
