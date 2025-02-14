@@ -1,4 +1,5 @@
 // Bucket List
+
 // numbers less fuzzy
 // works on mobile?
 // Workflow to create >1 game -- need to generalize to 4x4 -> NxN cube
@@ -89,7 +90,6 @@ function highlightClue(clueId) {
     }
 }
 
-
 function get_selected_clue() {
     for (let i = 0; i < gridSize; i++) {
         const cube = selected_seq[i];
@@ -136,6 +136,13 @@ function resetCameraView( rotation = { x: 0, y: 0, z: 0 }) {
         y: rotation.y,
         z: rotation.z
     });
+    gsap.to(arrow.rotation, {
+        duration: 1,
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z
+    });
+    
 
 }
 
@@ -264,9 +271,26 @@ function refresh_colors() {
             highlightClue(clueId);
         }
     }
+    updateArrow()
 }
 
+function updateArrow() {
+    const cube = selected_seq[selected_cube_index];
+    if (!cube) return;
 
+    arrow.position.copy(cube.position);
+
+    if (seq_dir === SEQDIR.x) {
+        arrow.rotation.set(0, 0, Math.PI / 2);
+        arrow.position.x += 0.5;
+    } else if (seq_dir === SEQDIR.y) {
+        arrow.rotation.set(0, 0, 0);
+        arrow.position.y += 0.5;
+    } else if (seq_dir === SEQDIR.z) {
+        arrow.rotation.set(0, 0, Math.PI);
+        arrow.position.z += 0.5;
+    }
+}
 
 
 for (let x = 0; x < gridSize; x++) {
@@ -346,8 +370,24 @@ for (let x = 0; x < gridSize; x++) {
     }
 }
 
-//scene.add(group)
+
+// Arrow geometry
+const arrowShape = new THREE.Shape();
+arrowShape.moveTo(-5, 1,-2);
+arrowShape.lineTo(4.2, 4.4,-2);
+arrowShape.lineTo(3.8, 3.6,-2);
+arrowShape.lineTo(-5, 1,-2);
+
+const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
+const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+
+
+// Axes - can be turned on for debugging
 const axesHelper = new THREE.AxesHelper(5);
+
+//Add all to scene
+//scene.add(arrow);
 //scene.add(axesHelper);
 scene.add(group);
 scene.add(labelgroup);
@@ -450,6 +490,9 @@ window.addEventListener("mousemove", (event) => {
 
         axesHelper.rotation.x += deltaMove.y * 0.01;
         axesHelper.rotation.y += deltaMove.x * 0.01;
+
+        arrow.rotation.x += deltaMove.y * 0.01;
+        arrow.rotation.y += deltaMove.x * 0.01;
     }
 
     previousMousePosition = {
@@ -461,13 +504,15 @@ window.addEventListener("mousemove", (event) => {
 function createNumberTexture(text, size, reverse) {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
+    const scaleFactor = 20; // Increase the scale factor for higher resolution
     size = 64;
 
     context.save()
 
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = size* scaleFactor;
+    canvas.height = size* scaleFactor;
     context.font = "Bold 16px Arial";
+    context.scale(scaleFactor, scaleFactor);
     context.fillStyle = "#000000";
     context.textAlign = "left";
     context.textBaseline = "top";
