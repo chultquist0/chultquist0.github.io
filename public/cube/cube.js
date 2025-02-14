@@ -1,9 +1,8 @@
 // Bucket List
 
-// numbers less fuzzy
 // works on mobile?
 // Workflow to create >1 game -- need to generalize to 4x4 -> NxN cube
-// arrow that shows which direction is being filled
+// arrow that shows which direction is being filled??
 
 
 const scene = new THREE.Scene();
