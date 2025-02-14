@@ -1,150 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Crossword </title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Crossword</title>
     <link rel="icon" href="/static/favicons/favicon.ico" />
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-            font-family: 'Trebuchet MS', sans-serif; 
-            display: flex;
-            background-color: #eeeeee; 
-        }
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        font-family: 'Trebuchet MS', sans-serif;
+        display: flex;
+        background-color: #eeeeee;
+      }
 
-        #header {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            
-        }
-        #header h1 {
-            margin: 0;
-            font-weight: bold;
-            font-size: 3em;
-        }
-        #header p {
-            margin: 5px 0;
-            font-size: 1.5em;
-            font-weight: 100;
-        }
+      #header {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      #header h1 {
+        margin: 0;
+        font-weight: bold;
+        font-size: 3em;
+      }
+      #header p {
+        margin: 5px 0;
+        font-size: 1.5em;
+        font-weight: 100;
+      }
 
-        canvas {
-            display: block;
-        }
+      canvas {
+        display: block;
+      }
 
-        #grid {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+      #grid {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
 
-        #grid {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
+      #grid {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
 
-        #current-clue {
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: black;
-            padding: 10px;
-            font-size: 20px;
-        }
+      #current-clue {
+        position: absolute;
+        top: 0;
+        left: 0;
+        color: black;
+        padding: 10px;
+        font-size: 20px;
+      }
 
-        #clues-container {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 25%;
-            height: 100%;
-            border-left: 1px solid #ccc;
-            padding: 10px;
-            background-color: white;
-            overflow-y: auto;
-            font-family: 'Trebuchet MS', sans-serif;
-        }
+      #clues-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 25%;
+        height: 100%;
+        border-left: 1px solid #ccc;
+        padding: 10px;
+        background-color: white;
+        overflow-y: auto;
+        font-family: 'Trebuchet MS', sans-serif;
+      }
 
-        .clues-section {
-            margin-bottom: 40px;
-            margin-top: 20px;
-        }
+      .clues-section {
+        margin-bottom: 40px;
+        margin-top: 20px;
+      }
 
-        .clues-header {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 5px;
-            font-family: 'Trebuchet MS', sans-serif;
-        }
+      .clues-header {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #ccc;
+        padding-bottom: 5px;
+        font-family: 'Trebuchet MS', sans-serif;
+      }
 
+      .clue {
+        padding: 10px;
+        margin: 10px 0;
+        background-color: #ffffff; /* White background */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        transition:
+          background-color 0.3s,
+          box-shadow 0.3s;
+        font-size: 1.1em;
+      }
 
+      .clue:hover {
+        background-color: #f9f9f9; /* Slightly darker on hover */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+      }
 
-        .clue {
-            padding: 10px;
-            margin: 10px 0;
-            background-color: #ffffff; /* White background */
-            border-radius: 8px; /* Rounded corners */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            transition: background-color 0.3s, box-shadow 0.3s;
-            font-size: 1.1em;
-        }
+      .clue.selected {
+        background-color: hsl(209, 56%, 45%); /* Highlight color for selected clue */
+        color: #ffffff; /* White text for contrast */
+      }
 
-        .clue:hover {
-            background-color: #f9f9f9; /* Slightly darker on hover */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
-        }
+      #reset-camera-button {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        padding: 10px 15px;
+        background-color: #6fa8dc;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s;
+        font-family: 'Trebuchet MS', sans-serif;
+      }
 
-        .clue.selected {
-            background-color: hsl(209, 56%, 45%); /* Highlight color for selected clue */
-            color: #ffffff; /* White text for contrast */
-        }
+      #reset-camera-button:hover {
+        background-color: #5a90c7;
+      }
 
-        #reset-camera-button {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            padding: 10px 15px;
-            background-color: #6fa8dc;
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
-            font-family: 'Trebuchet MS', sans-serif;
-        }
-
-        #reset-camera-button:hover {
-            background-color: #5a90c7;
-        }
-
-        #popupCorrect {
+      #popupCorrect {
         position: fixed;
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background-color: #4CAF50;
+        background-color: #4caf50;
         color: white;
         padding: 10px 20px;
         border-radius: 5px;
         font-size: 18px;
         z-index: 1000;
-    }
-    #popupIncorrect {
+      }
+      #popupIncorrect {
         position: fixed;
         bottom: 20px;
         left: 50%;
@@ -155,75 +152,75 @@
         border-radius: 5px;
         font-size: 18px;
         z-index: 1000;
-    }
-    .hidden {
+      }
+      .hidden {
         display: none;
-    }
-    .jiggle {
+      }
+      .jiggle {
         animation: jiggle 0.5s ease;
-    }
-    @keyframes jiggle {
-        0%, 100% {
-            transform: translateX(-50%) rotate(0deg);
+      }
+      @keyframes jiggle {
+        0%,
+        100% {
+          transform: translateX(-50%) rotate(0deg);
         }
         25% {
-            transform: translateX(-50%) rotate(3deg);
+          transform: translateX(-50%) rotate(3deg);
         }
         50% {
-            transform: translateX(-50%) rotate(-3deg);
+          transform: translateX(-50%) rotate(-3deg);
         }
         75% {
-            transform: translateX(-50%) rotate(3deg);
+          transform: translateX(-50%) rotate(3deg);
         }
-    }
-    .message {
-            text-align: center;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
+      }
+      .message {
+        text-align: center;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-    <div id="message" class="message" style="display: none;">
-        <h1>Game not ready for mobile yet!</h1>
+  <body>
+    <div id="message" class="message" style="display: none">
+      <h1>Game not ready for mobile yet!</h1>
     </div>
-    <div id="content" style="display: none;">
-        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-        <div id="header">
-            <h1>A 3D Crossword</h1>
-            <p id="date"></p>
-            <p id="author"></p>
-        </div>
-        <div id="grid">
-            <script src="flipFace.js"></script>
-            <script src="solve.js"></script>
-            <script src="cube.js"></script>
-        </div>
-        <div id="clues-container">
-            <div id="clues"></div>
-        </div>
-        <div id="popupCorrect" class="hidden">All Correct!</div>
-        <div id="popupIncorrect" class="hidden">Not Quite!</div>
-        <button id="reset-camera-button">Reset Camera</button>
+    <div id="content" style="display: none">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+      <div id="header">
+        <h1>A 3D Crossword</h1>
+        <p id="date"></p>
+        <p id="author"></p>
+      </div>
+      <div id="grid">
+        <script src="flipFace.js"></script>
+        <script src="solve.js"></script>
+        <script src="cube.js"></script>
+      </div>
+      <div id="clues-container">
+        <div id="clues"></div>
+      </div>
+      <div id="popupCorrect" class="hidden">All Correct!</div>
+      <div id="popupIncorrect" class="hidden">Not Quite!</div>
+      <button id="reset-camera-button">Reset Camera</button>
     </div>
     <script>
-        function isMobileDevice() {
-            return /Mobi|Android/i.test(navigator.userAgent);
+      function isMobileDevice() {
+        return /Mobi|Android/i.test(navigator.userAgent)
+      }
+
+      window.onload = function () {
+        if (isMobileDevice()) {
+          document.getElementById('message').style.display = 'block'
+        } else {
+          document.getElementById('content').style.display = 'block'
         }
-
-        window.onload = function () {
-            if (isMobileDevice()) {
-                document.getElementById('message').style.display = 'block';
-            } else {
-                document.getElementById('content').style.display = 'block';
-            }
-        };
+      }
     </script>
-</body>
-
+  </body>
 </html>
