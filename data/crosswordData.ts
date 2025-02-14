@@ -13,7 +13,7 @@ const crosswordsData: Crossword[] = [
   {
     date: 'Thursday, Nov. 26, 2020',
     type: 2,
-    href: '/crossword2D/Crossword112620.pdf',
+    href: '/crossword2d/Crossword112620.pdf',
   },
 ]
 
