@@ -187,7 +187,7 @@
 </head>
 
 <body>
-    <div id="message" class="message">
+    <div id="message" class="message" style="display: none;">
         <h1>Game not ready for mobile yet!</h1>
     </div>
     <div id="content" style="display: none;">
@@ -216,10 +216,13 @@
             return /Mobi|Android/i.test(navigator.userAgent);
         }
 
-        if (!isMobileDevice()) {
-            document.getElementById('message').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-        }
+        window.onload = function () {
+            if (isMobileDevice()) {
+                document.getElementById('message').style.display = 'block';
+            } else {
+                document.getElementById('content').style.display = 'block';
+            }
+        };
     </script>
 </body>
 
