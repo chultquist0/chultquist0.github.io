@@ -12,17 +12,20 @@ export default function Art() {
           <h1 className="text-3xl font-extrabold leading-9 tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
             Digital Art
           </h1>
-          <p>A collection of my digital art, mostly inspired by my surroundings in the San Francisco Bay Area</p>
+          <p>
+            A collection of my digital art, mostly inspired by my surroundings in the San Francisco
+            Bay Area
+          </p>
         </div>
         <div className="container py-12">
           <div className="mx-auto max-w-3xl space-y-8">
             {artData.map((d) => (
-              <ArtCard 
-                key={d.title} 
-                title={d.title} 
-                description={d.desc} 
-                imagePath={d.imagePath} 
-                alt={d.alt} 
+              <ArtCard
+                key={d.title}
+                title={d.title}
+                description={d.desc}
+                imagePath={d.imagePath}
+                alt={d.alt}
               />
             ))}
           </div>
