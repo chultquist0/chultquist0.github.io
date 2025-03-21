@@ -27,7 +27,7 @@ const artData: Art[] = [
   {
     title: 'Correspondance Card',
     desc: 'Intended to be mailed, but I have yet to actually get printed',
-    imagePath: '/static/images/correspond.png',
+    imagePath: '/static/images/Correspond.png',
     alt: 'A correspondance card',
   },
 ]
