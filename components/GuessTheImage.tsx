@@ -15,12 +15,24 @@ import {
 } from 'recharts'
 
 const images = [
-  { src: '/static/images/image1.jpg', class: 'c' },
-  { src: '/static/images/image2.jpg', class: 'b' },
-  { src: '/static/images/image4.jpg', class: 'b' },
-  { src: '/static/images/image3.jpg', class: 'c' },
-  { src: '/static/images/image2.jpg', class: 'c' },
-  { src: '/static/images/image1.jpg', class: 'b' },
+  { src: '/static/images/1383_cropped.png', class: 'b', GN2: '2', DL1r: '2' },
+  { src: '/static/images/3113_cropped.png', class: 'b', GN2: '5', DL1r: '5' },
+  { src: '/static/images/311_cropped.png', class: 'c', GN2: '1', DL1r: '1' },
+  { src: '/static/images/50_cropped.png', class: 'c', GN2: '4', DL1r: '3' },
+  { src: '/static/images/3873_cropped.png', class: 'b', GN2: '5', DL1r: '4' },
+  { src: '/static/images/230_cropped.png', class: 'c', GN2: '2', DL1r: '2' },
+  { src: '/static/images/1373_cropped.png', class: 'b', GN2: '3', DL1r: '1' },
+  { src: '/static/images/808_cropped.png', class: 'c', GN2: '1', DL1r: '1' },
+  { src: '/static/images/3_cropped.png', class: 'c', GN2: '3', DL1r: '1' },
+  { src: '/static/images/3114_cropped.png', class: 'b', GN2: '5', DL1r: '5' },
+  { src: '/static/images/1497_cropped.png', class: 'b', GN2: '5', DL1r: '5' },
+  { src: '/static/images/417_cropped.png', class: 'c', GN2: '1', DL1r: '1' },
+  { src: '/static/images/161_cropped.png', class: 'c', GN2: '1', DL1r: '1' },
+  { src: '/static/images/3631_cropped.png', class: 'b', GN2: '5', DL1r: '5' },
+  { src: '/static/images/61_cropped.png', class: 'c', GN2: '1', DL1r: '1' },
+  { src: '/static/images/1127_cropped.png', class: 'b', GN2: '5', DL1r: '5' },
+  { src: '/static/images/296_cropped.png', class: 'c', GN2: '4', DL1r: '3' },
+  { src: '/static/images/2645_cropped.png', class: 'b', GN2: '4', DL1r: '3' },
 ]
 
 type ChartDataItem = {
