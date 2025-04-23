@@ -15,6 +15,11 @@ const crosswordsData: Crossword[] = [
     type: 2,
     href: '/crossword2d/Crossword112620.pdf',
   },
+  {
+    date: 'Wednesday, Apr. 23, 2025',
+    type: 2,
+    href: '/crossword2d/LeGuin.pdf',
+  },
 ]
 
 export default crosswordsData

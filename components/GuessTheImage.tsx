@@ -198,7 +198,10 @@ const GuessTheImage = () => {
       {!finished ? (
         <>
           <h2 className="mb-4 text-2xl font-semibold">Test your B-Tagging!</h2>
-          <img src={images[currentImageIndex].src} className="mb-4 h-auto w-64 rounded" />
+          <img
+            src={images[currentImageIndex].src}
+            className="mb-4 h-auto w-4/5 max-w-2xl rounded"
+          />
           <p className="text-md mb-2">
             {' '}
             {currentImageIndex + 1} / {images.length}
