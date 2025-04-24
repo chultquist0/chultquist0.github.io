@@ -7,7 +7,7 @@ summary: 'Are you a better b-tagger than GN2?'
 ---
 
 This article contains a small game that you can play to determine if you are better at identifying b-jets than ATLAS's state-of-the-art b-tagger, GN2.
-If you want some context for what all of that means, read the section below. If you either don't need or don't care, [skip ahead](#thetest), but at least pause and look at my drawings along the way!
+If you want some context for what all of that means, read the section below. If you either don't need or don't care, [skip ahead](#putting-your-b-tagging-skills-to-the-test), but at least pause and look at my drawings along the way!
 
 ## Some Background
 
@@ -16,11 +16,45 @@ If you want some context for what all of that means, read the section below. If 
 Protons are made of constituent particles called "quarks" and "gluons". When two we collide two protons at the Large Hadron Collider (LHC), these quarks and gluons collide to make more quarks and gluons which spray out into the detector.
 These quarks and gluons radiate even more quarks and gluons, creating a compact spray of particles in some direction. The different quarks and gluons in this spray then combine to form hadrons (particles like a proton that are made of quarks and gluons).
 
-- put in cartoon drawing of hadronization
+<div className="flex justify-center"></div>
+
+<div className="flex justify-center">
+  <div style={{ textAlign: 'center', width: '700px' }}>
+    <img
+      src="/static/images/jetformation_better.png"
+      alt="Cartoon drawing of the hadronization process"
+      width="700"
+    />
+    <p style={{ marginTop: '8px', fontStyle: 'italic' }}>
+      {' '}
+      How jets are formed in the Large Hadron collider. Quarks in the final state of some underlying
+      physics process are very energetic. They radiate gluons, which turn into more quarks.
+      Eventially, all of these quarks settle into doublets or triplets of quarks, called hadrons.
+      This 'hadronization' is still a not-well understood process.{' '}
+    </p>
+  </div>
+</div>
 
 To study the underlying process of what happened in the initial proton collision, we often want to understand what type of quark initially created that jet. We call the different kind of quarks "flavors," and quarks come in 6 different varieties: up, down, strange, charm, bottom, and top.
+In the above cartoon, we want to figure out what flavor the "quarks from underlying physics event" are.
 
-- put in cartoon drawing of flavors
+<div className="flex justify-center">
+  <div style={{ textAlign: 'center', width: '700px' }}>
+    <img
+      src="/static/images/icecreamflavors.png"
+      alt="Ice cream parlor with different quark flavors"
+      width="700"
+    />
+    <p style={{ marginTop: '8px', fontStyle: 'italic' }}>
+      {' '}
+      The different flavors of quarks you might order. We call the different species of quarks
+      different "flavors" not because they are physically related to flavor, but rather because it
+      is cute to call them "flavors"{' '}
+    </p>
+  </div>
+</div>
+
+<div className="flex justify-center"></div>
 
 Most commonly, we try to identify b-quarks. This is partically because physics involving b-quarks is all-the-rage these days[^1], and partially because jets coming from b-quarks, or **b-jets**, are easy to identify!
 
@@ -28,9 +62,19 @@ Most commonly, we try to identify b-quarks. This is partically because physics i
 
 B-hadrons, or hadrons containing b-quarks, take a relatively long time to decay compared to many other unstable hadrons. So, b-jets tend to have a series of particles in them that all originate from the point of the b-hadron's decay, displaced from the **primary vertex** of the event.
 
-This **secondary vertex** is a big name-tag saying "Hello! I'm A B-JET". Other jets (often c-jets, or jets from c-quarks) have a secondary vertex as well, but it is much closer to the primary vertex.
+This **secondary vertex** is a big sign that a jet comes from a b-quark. Other jets (often c-jets, or jets from c-quarks) have a secondary vertex as well, but it is usually much closer to the primary vertex. The momentum of tracks coming from the secondary vertex also tend to be larger than the momentum of other tracks in the event.
 
-## Putting your B-tagging Skills to the Test 
+<div className="flex justify-center">
+  <div style={{ textAlign: 'center', width: '450px' }}>
+    <img src="/static/images/bjetPVSV.png" alt="Cartoon drawing of bjet vs other jet" width="450" />
+    <p style={{ marginTop: '8px', fontStyle: 'italic' }}>
+      What to expect when you order a b-flavored jet, versus most other flavors. B-jets tend to have
+      a series of tracks that meet at a vertex some distance away from the primary vertex.
+    </p>
+  </div>
+</div>
+
+## Putting your B-tagging Skills to the Test
 
 ### A Guided Example
 
@@ -38,31 +82,27 @@ Let's see how well you can identify b-jets! To warm you up, I'll go through an e
 In the image below, you see the tracks of different charged particles that are associated with a jet from a collider event[^2].
 
 <div className="flex flex-col items-start gap-5 md:flex-row">
-  <img src="/static/images/3197_ex/3197_b_uncropped2.png" alt="Alt text" width="300" />
+  <img
+    src="/static/images/3197_ex/3197_b_uncropped2.png"
+    alt="Example of tracks seen from a b-jet"
+    width="300"
+  />
   <div>
     <p>
-      <font color="blue">
-        <b>Blue</b>
-      </font>{' '}
-      tracks represent that paths of positively charged particles, while{' '}
-      <font color="green">
-        <b>green</b>
-      </font>{' '}
-      are negatively charged. Neutral particles don't leave tracks, so they aren't shown here.
-      Tracks with a larger momentum are less transparent.{' '}
+      <font color="blue"><b>Blue</b></font>{' '}tracks represent that paths of positively charged particles, while
+      <font color="green"> <b>green</b></font>{' '}are negatively charged. Neutral particles don't leave tracks, so they aren't shown here.
+      Tracks with a larger momentum are less transparent.
     </p>
     <p>
-      {' '}
       Although the tracks are reconstructed in 3D, I've projected them onto a 2D plane for the
       purposes of this game. You can see a few different very transparent tracks that come together
       near the origin at the bottom of the image. These are likely tracks coming from the creation
-      of the jet.{' '}
+      of the jet.
     </p>
     <p>
-      {' '}
       There is also a solid green line, i.e. a high-momentum negatively charge particle that doesn't
       quite meet at this point. Finally, there is a light blue line that also doesn't meet at the
-      point, but does cross the solid green line around y=0.6 mm.{' '}
+      point, but does cross the solid green line around y=0.6 mm.
     </p>
   </div>
 </div>
@@ -71,13 +111,21 @@ When we reconstruct tracks, the closest point of approach for the tracks is abou
 Below left, I've placed a black dot where a secondary vertex might be, and below right, I've erased the part of the tracks before this vertex.
 
 <div className="flex flex-col items-start gap-5 md:flex-row">
-  <img src="/static/images/3197_ex/3197_b_uncropped.png" alt="Alt text" width="320" />
-  <img src="/static/images/3197_ex/3197_b_cropped.png" alt="Alt text" width="320" />
+  <img
+    src="/static/images/3197_ex/3197_b_uncropped.png"
+    alt="Example of tracks seen from a b-jet, with primary vertex identified"
+    width="320"
+  />
+  <img
+    src="/static/images/3197_ex/3197_b_cropped.png"
+    alt="Example of tracks seen from a b-jet, with primary vertex identified, and tracks cropped"
+    width="320"
+  />
 </div>
 
 It's now clear this is a jet with some particle that travelled about half a millimeter, decayed, and created two new tracks. This looks like a b-jet! Because this is simulated data, we have the information of the type of particle that created this jet. Indeed, it is a true b-jet.
 
-### Your Turn
+### YourTurn
 
 I'll give you the tracks of 18 different jets, just like above. Each is either a b-jet or a c-jet. Assign each jet a b-tagging score of 1-5, using a larger score to mean "more b-like".
 At the end, you'll be able to see how well you can separate a b-jet from a non-b-jet. Some hints:
@@ -99,7 +147,7 @@ In the ATLAS experiment, we have dedicated machine learn models to look at these
 You can see how it performed below.
 
 <div className="flex justify-center">
-  <img src="/static/images/3197_ex/GN2.png" alt="Alt text" width="450" />
+  <img src="/static/images/3197_ex/GN2.png" alt="GN2's performance curve" width="450" />
 </div>
 GN2 received an AUC of 0.89 on this sample. It does pretty good! - **If you did worse** than this:
 don't feel bad! This model is trained on a ton of data, has access to more information about the
@@ -107,6 +155,6 @@ jet, and can see the tracks in 3D. You were naturally at a disadvantage. - **If 
 than this: send in a resume! See if ATLAS will hire you to be their next b-tagger. Maybe machine
 learning won't take all of our jobs.{' '}
 
-[^1]: This is for at least two reasons. First, most Higgs bosons decay to two b-quarks, so identifying b-jets is important in identifying Higgs bosons! Second, we can observe asymmetries between matter and anti-matter most easily in b-quarks, so identifying b-jets is important to this research path as well.
+[^1]: This is for at least two reasons. First, most Higgs bosons decay to two b-quarks, so identifying b-jets is important in identifying Higgs bosons. Second, we can observe asymmetries between matter and anti-matter most easily in b-quarks, so identifying b-jets is important to this research path as well.
 
 [^2]: These plots were generated with ATLAS Run 2 (13 TeV) Monte Carlo using Sherpa 2.2 as the generator/hadronization model. Jets are from simulated WW production in qqlv final state. The tracks shown are projections of the tracks matches to the jets in the x-y plane.
