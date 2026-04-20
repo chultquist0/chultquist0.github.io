@@ -106,8 +106,10 @@ export default function RoomPlanner() {
   }
 
   const [sending, setSending] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
+  const [showModal, setShowModal] = useState(false)
+  const [senderName, setSenderName] = useState('')
 
-  const sendDesign = async () => {
+  const doSend = async (name: string) => {
     const svg = svgRef.current
     if (!svg) return
     setSending('sending')
@@ -117,16 +119,17 @@ export default function RoomPlanner() {
       const svgStr = new XMLSerializer().serializeToString(clone)
       const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
       const url = URL.createObjectURL(blob)
+      // Small JPEG to stay under EmailJS payload limits
       const canvas = document.createElement('canvas')
-      canvas.width = VW
-      canvas.height = VH
+      canvas.width = 500
+      canvas.height = 500
       const ctx = canvas.getContext('2d')!
       await new Promise<void>((resolve, reject) => {
         const img = new Image()
         img.onload = () => {
           ctx.fillStyle = 'white'
-          ctx.fillRect(0, 0, VW, VH)
-          ctx.drawImage(img, 0, 0, VW, VH)
+          ctx.fillRect(0, 0, 500, 500)
+          ctx.drawImage(img, 0, 0, 500, 500)
           URL.revokeObjectURL(url)
           resolve()
         }
@@ -136,12 +139,13 @@ export default function RoomPlanner() {
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-        { image: canvas.toDataURL('image/png') },
+        { from_name: name, image: canvas.toDataURL('image/jpeg', 0.7) },
         { publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY! }
       )
       setSending('done')
       setTimeout(() => setSending('idle'), 3000)
-    } catch {
+    } catch (err) {
+      console.error('EmailJS error:', err)
       setSending('error')
       setTimeout(() => setSending('idle'), 3000)
     }
@@ -219,7 +223,7 @@ export default function RoomPlanner() {
         )}
 
         <div style={{ padding: 12, borderTop: '1px solid black' }}>
-          <Btn onClick={sendDesign} disabled={sending !== 'idle'}>
+          <Btn onClick={() => setShowModal(true)} disabled={sending !== 'idle'}>
             {sending === 'sending' ? 'Sending…' : sending === 'done' ? 'Sent!' : sending === 'error' ? 'Error' : 'Send Design'}
           </Btn>
         </div>
@@ -376,6 +380,57 @@ export default function RoomPlanner() {
             })()}
         </svg>
       </div>
+
+      {/* Name modal */}
+      {showModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 50,
+          }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            style={{
+              background: 'white', border: '1px solid black',
+              padding: 24, display: 'flex', flexDirection: 'column', gap: 12,
+              fontFamily: 'monospace', minWidth: 260,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontWeight: 'bold', fontSize: 13 }}>Send Design</div>
+            <input
+              autoFocus
+              placeholder="Your name"
+              value={senderName}
+              onChange={(e) => setSenderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && senderName.trim()) {
+                  setShowModal(false)
+                  doSend(senderName.trim())
+                }
+              }}
+              style={{
+                border: '1px solid black', padding: '4px 8px',
+                fontFamily: 'monospace', fontSize: 12, outline: 'none',
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Btn
+                onClick={() => {
+                  if (!senderName.trim()) return
+                  setShowModal(false)
+                  doSend(senderName.trim())
+                }}
+              >
+                Send
+              </Btn>
+              <Btn onClick={() => setShowModal(false)}>Cancel</Btn>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
