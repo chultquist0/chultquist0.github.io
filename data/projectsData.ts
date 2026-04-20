@@ -7,6 +7,11 @@ interface Project {
 
 const projectsData: Project[] = [
   {
+    title: 'Room Planner',
+    description: `Drag-and-drop furniture layout tool for planning a 15×15 ft room with a bay window.`,
+    href: '/room-planner',
+  },
+  {
     title: 'ATLAS',
     description: `All Things Leave A Smudge!`,
     imgSrc: '/static/images/atlas.png',
