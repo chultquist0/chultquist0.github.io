@@ -454,12 +454,11 @@ export default function RoomPlanner() {
             zIndex: 50,
           }}
           role="presentation"
+          aria-modal="true"
           onClick={() => setShowModal(false)}
           onKeyDown={(e) => e.key === 'Escape' && setShowModal(false)}
         >
           <div
-            role="dialog"
-            aria-modal="true"
             style={{
               background: 'white',
               border: '1px solid black',
