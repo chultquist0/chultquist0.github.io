@@ -43,7 +43,6 @@ export default function RoomPlanner() {
   const [pieces, setPieces] = useState<Piece[]>([])
   const [sel, setSel] = useState<number | null>(null)
   const [ghost, setGhost] = useState<{ x: number; y: number; type: FType } | null>(null)
-  const [htmlGhost, setHtmlGhost] = useState<{ x: number; y: number; type: FType } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
   const rafRef = useRef<number | null>(null)
@@ -73,8 +72,6 @@ export default function RoomPlanner() {
     if (!d) return
     if ('touches' in e) e.preventDefault()
     const { clientX, clientY } = getXY(e)
-    // HTML ghost updates immediately for snappy feel
-    if (d.mode === 'palette') setHtmlGhost({ x: clientX, y: clientY, type: d.type })
     // RAF-throttle the SVG state updates for smoothness
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     rafRef.current = requestAnimationFrame(() => {
@@ -93,7 +90,6 @@ export default function RoomPlanner() {
     const d = dragRef.current
     if (!d) return
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    setHtmlGhost(null)
     if (d.mode === 'palette') {
       const { clientX, clientY } = getXY(e)
       const svg = svgRef.current
@@ -192,7 +188,8 @@ export default function RoomPlanner() {
       style={{
         display: 'flex',
         flexDirection: isMobile ? 'column' : 'row',
-        height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 10rem)',
+        height: isMobile ? 'calc(100dvh - 9rem)' : 'calc(100vh - 10rem)',
+        overflow: 'hidden',
         minHeight: 0,
         fontFamily: 'monospace',
         userSelect: 'none',
@@ -200,69 +197,40 @@ export default function RoomPlanner() {
         background: 'white',
       }}
     >
-      {/* HTML ghost — follows finger immediately anywhere on screen */}
-      {htmlGhost && (
-        <div
-          style={{
-            position: 'fixed',
-            left: htmlGhost.x,
-            top: htmlGhost.y,
-            transform: 'translate(-50%,-50%)',
-            width: DEFS[htmlGhost.type].w * 0.5,
-            height: DEFS[htmlGhost.type].h * 0.5,
-            border: '1.5px dashed black',
-            background: 'rgba(255,255,255,0.85)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 10,
-            fontFamily: 'monospace',
-            textAlign: 'center',
-            whiteSpace: 'pre-line',
-            pointerEvents: 'none',
-            zIndex: 100,
-            opacity: 0.85,
-          }}
-        >
-          {DEFS[htmlGhost.type].label}
-        </div>
-      )}
-
       {/* Sidebar — order:2 on mobile so SVG appears above it */}
       <div
         style={{
           order: isMobile ? 2 : undefined,
           width: isMobile ? '100%' : 160,
-          height: isMobile ? 'auto' : undefined,
           borderRight: isMobile ? undefined : '1px solid black',
           borderTop: isMobile ? '1px solid black' : undefined,
           display: 'flex',
-          flexDirection: isMobile ? 'row' : 'column',
+          flexDirection: 'column',
           flexShrink: 0,
-          overflowX: isMobile ? 'auto' : undefined,
         }}
       >
+        {/* Desktop header */}
         {!isMobile && (
-          <div
-            style={{
-              padding: '10px 14px',
-              borderBottom: '1px solid black',
-              fontWeight: 'bold',
-              fontSize: 13,
-            }}
-          >
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid black', fontWeight: 'bold', fontSize: 13 }}>
             Furniture
           </div>
         )}
+
+        {/* Palette items */}
         <div
           style={{
             flex: isMobile ? undefined : 1,
-            padding: isMobile ? '8px 10px' : 14,
+            padding: isMobile ? '6px 10px' : 14,
             display: 'flex',
             flexDirection: isMobile ? 'row' : 'column',
             gap: isMobile ? 10 : 14,
             overflowY: isMobile ? undefined : 'auto',
+            overflowX: isMobile ? 'auto' : undefined,
             alignItems: isMobile ? 'center' : undefined,
+            minHeight: 0,
+            height: isMobile
+              ? Math.max(...Object.values(DEFS).map((d) => d.h)) * 0.65 + 12
+              : undefined,
           }}
         >
           {unplacedDefs.map(([type, def]) => (
@@ -283,12 +251,12 @@ export default function RoomPlanner() {
                 textAlign: 'center',
                 lineHeight: 1.4,
                 whiteSpace: 'pre-line',
+                flexShrink: 0,
               }}
               onKeyDown={() => {}}
               onMouseDown={(e) => {
                 e.preventDefault()
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
-                setHtmlGhost({ x: e.clientX, y: e.clientY, type })
                 const p = toSVG(svgRef.current, e.clientX, e.clientY)
                 setGhost(p ? { x: p.x, y: p.y, type } : null)
               }}
@@ -296,7 +264,6 @@ export default function RoomPlanner() {
                 e.preventDefault()
                 const t = e.touches[0]
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
-                setHtmlGhost({ x: t.clientX, y: t.clientY, type })
                 const p = toSVG(svgRef.current, t.clientX, t.clientY)
                 setGhost(p ? { x: p.x, y: p.y, type } : null)
               }}
@@ -306,54 +273,45 @@ export default function RoomPlanner() {
           ))}
         </div>
 
-        {sel !== null && selPiece && (
-          <div
+        {/* Controls row — always rendered so sidebar height stays constant on mobile */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'row' : 'column',
+            gap: 8,
+            padding: isMobile ? '6px 10px' : 12,
+            borderTop: '1px solid black',
+            alignItems: isMobile ? 'center' : undefined,
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontSize: 11, whiteSpace: 'nowrap', opacity: selPiece ? 1 : 0.3, flexShrink: 0 }}>
+            Rotate: {selPiece?.rot ?? 0}°
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={355}
+            step={5}
+            value={selPiece?.rot ?? 0}
+            disabled={!selPiece}
+            onChange={(e) => setRot(Number(e.target.value))}
             style={{
-              padding: isMobile ? '8px 10px' : 12,
-              borderTop: isMobile ? undefined : '1px solid black',
-              borderLeft: isMobile ? '1px solid black' : undefined,
-              display: 'flex',
-              flexDirection: isMobile ? 'row' : 'column',
-              gap: 8,
-              alignItems: isMobile ? 'center' : undefined,
+              width: isMobile ? 110 : '100%',
+              accentColor: 'black',
+              opacity: selPiece ? 1 : 0.3,
               flexShrink: 0,
             }}
-          >
-            {!isMobile && <div style={{ fontSize: 11 }}>Rotate: {selPiece.rot}°</div>}
-            <input
-              type="range"
-              min={0}
-              max={355}
-              step={5}
-              value={selPiece.rot}
-              onChange={(e) => setRot(Number(e.target.value))}
-              style={{ width: isMobile ? 80 : '100%', accentColor: 'black' }}
-            />
-            <Btn onClick={del}>Delete</Btn>
-          </div>
-        )}
-
-        <div style={{ padding: 12, borderTop: '1px solid black' }}>
+          />
+          <Btn onClick={del} disabled={!selPiece}>Delete</Btn>
           <Btn onClick={() => setShowModal(true)} disabled={sending !== 'idle'}>
-            {sending === 'sending'
-              ? 'Sending…'
-              : sending === 'done'
-                ? 'Sent!'
-                : sending === 'error'
-                  ? 'Error'
-                  : 'Send Design'}
+            {sending === 'sending' ? 'Sending…' : sending === 'done' ? 'Sent!' : sending === 'error' ? 'Error' : 'Send Design'}
           </Btn>
         </div>
+
+        {/* Desktop hint */}
         {!isMobile && (
-          <div
-            style={{
-              padding: '8px 14px',
-              borderTop: '1px solid black',
-              fontSize: 10,
-              color: '#666',
-              lineHeight: 1.5,
-            }}
-          >
+          <div style={{ padding: '8px 14px', borderTop: '1px solid black', fontSize: 10, color: '#666', lineHeight: 1.5 }}>
             Drag to place.
             <br />
             Click to select.
