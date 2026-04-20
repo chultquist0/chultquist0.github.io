@@ -104,6 +104,26 @@ export default function RoomPlanner() {
     setSel(null)
   }
 
+  const sendEmail = () => {
+    const lines = pieces.map((pc) => {
+      const def = DEFS[pc.type]
+      const xFt = ((pc.x - OX) / S).toFixed(1)
+      const yFt = ((pc.y - OY) / S).toFixed(1)
+      return `  • ${def.label.replace('\n', ' ')}: ${xFt} ft from left, ${yFt} ft from top, rotated ${pc.rot}°`
+    })
+    const body = [
+      'Room Layout Plan (15×15 ft with bay window)',
+      '============================================',
+      '',
+      pieces.length === 0 ? '  (no furniture placed)' : lines.join('\n'),
+      '',
+      'View the planner: https://chultquist0.github.io/room-planner',
+    ].join('\n')
+    window.open(
+      `mailto:charlie.hultquist@berkeley.edu?subject=Room%20Layout%20Plan&body=${encodeURIComponent(body)}`
+    )
+  }
+
   return (
     <div
       style={{
@@ -175,6 +195,9 @@ export default function RoomPlanner() {
           </div>
         )}
 
+        <div style={{ padding: 12, borderTop: '1px solid black' }}>
+          <Btn onClick={sendEmail}>Send Design</Btn>
+        </div>
         <div style={{ padding: '8px 14px', borderTop: '1px solid black', fontSize: 10, color: '#666', lineHeight: 1.5 }}>
           Drag to place.
           <br />
@@ -219,17 +242,21 @@ export default function RoomPlanner() {
           >
             15 ft
           </text>
-          {/* Door on right wall, near bottom — 3 ft wide, hinged at bottom corner, swings inward */}
+          {/* Door on right wall, near bottom — 3 ft wide, hinged at top of opening, swings inward */}
           {(() => {
             const DW = 3 * S
-            const hx = OX + ROOM
-            const hy = OY + ROOM
+            const hx = OX + ROOM        // right wall x
+            const hy = OY + ROOM        // bottom of opening
+            const hinge = hy - DW       // top of opening = hinge point
             return (
               <g>
-                <rect x={hx - 2} y={hy - DW} width={4} height={DW} fill="white" />
-                <line x1={hx} y1={hy} x2={hx - DW} y2={hy} stroke="black" strokeWidth="1.5" />
+                {/* erase wall stroke over the opening */}
+                <rect x={hx - 2} y={hinge} width={4} height={DW} fill="white" />
+                {/* door panel: hinge → left, perpendicular into room */}
+                <line x1={hx} y1={hinge} x2={hx - DW} y2={hinge} stroke="black" strokeWidth="1.5" />
+                {/* swing arc: panel end curves down to bottom of opening */}
                 <path
-                  d={`M ${hx - DW} ${hy} A ${DW} ${DW} 0 0 0 ${hx} ${hy - DW}`}
+                  d={`M ${hx - DW} ${hinge} A ${DW} ${DW} 0 0 1 ${hx} ${hy}`}
                   fill="none"
                   stroke="black"
                   strokeWidth="1"
