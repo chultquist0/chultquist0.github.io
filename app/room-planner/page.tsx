@@ -213,7 +213,14 @@ export default function RoomPlanner() {
       >
         {/* Desktop header */}
         {!isMobile && (
-          <div style={{ padding: '10px 14px', borderBottom: '1px solid black', fontWeight: 'bold', fontSize: 13 }}>
+          <div
+            style={{
+              padding: '10px 14px',
+              borderBottom: '1px solid black',
+              fontWeight: 'bold',
+              fontSize: 13,
+            }}
+          >
             Furniture
           </div>
         )}
@@ -287,7 +294,16 @@ export default function RoomPlanner() {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontSize: 11, whiteSpace: 'nowrap', opacity: selPiece ? 1 : 0.3, flexShrink: 0, minWidth: isMobile ? 80 : undefined, display: 'inline-block' }}>
+          <span
+            style={{
+              fontSize: 11,
+              whiteSpace: 'nowrap',
+              opacity: selPiece ? 1 : 0.3,
+              flexShrink: 0,
+              minWidth: isMobile ? 80 : undefined,
+              display: 'inline-block',
+            }}
+          >
             Rotate: {selPiece?.rot ?? 0}°
           </span>
           <input
@@ -305,15 +321,31 @@ export default function RoomPlanner() {
               flexShrink: 0,
             }}
           />
-          <Btn onClick={del} disabled={!selPiece}>Delete</Btn>
+          <Btn onClick={del} disabled={!selPiece}>
+            Delete
+          </Btn>
           <Btn onClick={() => setShowModal(true)} disabled={sending !== 'idle'}>
-            {sending === 'sending' ? 'Sending…' : sending === 'done' ? 'Sent!' : sending === 'error' ? 'Error' : 'Send Design'}
+            {sending === 'sending'
+              ? 'Sending…'
+              : sending === 'done'
+                ? 'Sent!'
+                : sending === 'error'
+                  ? 'Error'
+                  : 'Send Design'}
           </Btn>
         </div>
 
         {/* Desktop hint */}
         {!isMobile && (
-          <div style={{ padding: '8px 14px', borderTop: '1px solid black', fontSize: 10, color: '#666', lineHeight: 1.5 }}>
+          <div
+            style={{
+              padding: '8px 14px',
+              borderTop: '1px solid black',
+              fontSize: 10,
+              color: '#666',
+              lineHeight: 1.5,
+            }}
+          >
             Drag to place.
             <br />
             Click to select.
