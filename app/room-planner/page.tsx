@@ -43,7 +43,7 @@ export default function RoomPlanner() {
   const [pieces, setPieces] = useState<Piece[]>([])
   const [sel, setSel] = useState<number | null>(null)
   const [ghost, setGhost] = useState<{ x: number; y: number; type: FType } | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const rafRef = useRef<number | null>(null)
 
@@ -183,6 +183,8 @@ export default function RoomPlanner() {
     ([type]) => !placedTypes.has(type)
   )
 
+  if (isMobile === null) return null
+
   return (
     <div
       style={{
@@ -285,7 +287,7 @@ export default function RoomPlanner() {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontSize: 11, whiteSpace: 'nowrap', opacity: selPiece ? 1 : 0.3, flexShrink: 0 }}>
+          <span style={{ fontSize: 11, whiteSpace: 'nowrap', opacity: selPiece ? 1 : 0.3, flexShrink: 0, minWidth: isMobile ? 80 : undefined, display: 'inline-block' }}>
             Rotate: {selPiece?.rot ?? 0}°
           </span>
           <input
