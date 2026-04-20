@@ -73,7 +73,12 @@ export default function RoomPlanner() {
       const svg = svgRef.current
       if (svg) {
         const r = svg.getBoundingClientRect()
-        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+        if (
+          e.clientX >= r.left &&
+          e.clientX <= r.right &&
+          e.clientY >= r.top &&
+          e.clientY <= r.bottom
+        ) {
           const p = toSVG(svg, e.clientX, e.clientY)!
           const id = uid++
           setPieces((prev) => [...prev, { id, type: d.type, x: p.x, y: p.y, rot: 0 }])
@@ -97,7 +102,8 @@ export default function RoomPlanner() {
   const selPiece = pieces.find((pc) => pc.id === sel) ?? null
 
   const setRot = (deg: number) =>
-    sel !== null && setPieces((prev) => prev.map((pc) => (pc.id === sel ? { ...pc, rot: deg } : pc)))
+    sel !== null &&
+    setPieces((prev) => prev.map((pc) => (pc.id === sel ? { ...pc, rot: deg } : pc)))
 
   const del = () => {
     if (sel === null) return
@@ -173,13 +179,31 @@ export default function RoomPlanner() {
           flexShrink: 0,
         }}
       >
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid black', fontWeight: 'bold', fontSize: 13 }}>
+        <div
+          style={{
+            padding: '10px 14px',
+            borderBottom: '1px solid black',
+            fontWeight: 'bold',
+            fontSize: 13,
+          }}
+        >
           Furniture
         </div>
-        <div style={{ flex: 1, padding: 14, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+        <div
+          style={{
+            flex: 1,
+            padding: 14,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 14,
+            overflowY: 'auto',
+          }}
+        >
           {(Object.entries(DEFS) as [FType, (typeof DEFS)[FType]][]).map(([type, def]) => (
             <div
               key={type}
+              role="button"
+              tabIndex={0}
               title={`Drag to place ${def.label}`}
               style={{
                 width: def.w * 0.65,
@@ -194,6 +218,7 @@ export default function RoomPlanner() {
                 lineHeight: 1.4,
                 whiteSpace: 'pre-line',
               }}
+              onKeyDown={() => {}}
               onMouseDown={(e) => {
                 e.preventDefault()
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
@@ -207,7 +232,15 @@ export default function RoomPlanner() {
         </div>
 
         {sel !== null && selPiece && (
-          <div style={{ padding: 12, borderTop: '1px solid black', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div
+            style={{
+              padding: 12,
+              borderTop: '1px solid black',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
             <div style={{ fontSize: 11 }}>Rotate: {selPiece.rot}°</div>
             <input
               type="range"
@@ -224,10 +257,24 @@ export default function RoomPlanner() {
 
         <div style={{ padding: 12, borderTop: '1px solid black' }}>
           <Btn onClick={() => setShowModal(true)} disabled={sending !== 'idle'}>
-            {sending === 'sending' ? 'Sending…' : sending === 'done' ? 'Sent!' : sending === 'error' ? 'Error' : 'Send Design'}
+            {sending === 'sending'
+              ? 'Sending…'
+              : sending === 'done'
+                ? 'Sent!'
+                : sending === 'error'
+                  ? 'Error'
+                  : 'Send Design'}
           </Btn>
         </div>
-        <div style={{ padding: '8px 14px', borderTop: '1px solid black', fontSize: 10, color: '#666', lineHeight: 1.5 }}>
+        <div
+          style={{
+            padding: '8px 14px',
+            borderTop: '1px solid black',
+            fontSize: 10,
+            color: '#666',
+            lineHeight: 1.5,
+          }}
+        >
           Drag to place.
           <br />
           Click to select.
@@ -236,7 +283,14 @@ export default function RoomPlanner() {
 
       {/* SVG canvas */}
       <div
-        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 8 }}
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          padding: 8,
+        }}
       >
         <svg
           ref={svgRef}
@@ -274,9 +328,9 @@ export default function RoomPlanner() {
           {/* Door on right wall — 3 ft wide, 0.5 ft from bottom wall, hinge at bottom, arc sweeps up */}
           {(() => {
             const DW = 3 * S
-            const hx = OX + ROOM             // right wall x
-            const yBot = OY + ROOM - S / 2   // hinge (bottom of opening, 0.5 ft above bottom wall)
-            const yTop = yBot - DW           // top of opening
+            const hx = OX + ROOM // right wall x
+            const yBot = OY + ROOM - S / 2 // hinge (bottom of opening, 0.5 ft above bottom wall)
+            const yTop = yBot - DW // top of opening
             return (
               <g>
                 {/* erase right wall stroke over the opening */}
@@ -310,7 +364,13 @@ export default function RoomPlanner() {
                   e.stopPropagation()
                   setSel(pc.id)
                   const p = toSVG(svgRef.current, e.clientX, e.clientY)!
-                  dragRef.current = { mode: 'item', type: pc.type, pieceId: pc.id, ox: p.x - pc.x, oy: p.y - pc.y }
+                  dragRef.current = {
+                    mode: 'item',
+                    type: pc.type,
+                    pieceId: pc.id,
+                    ox: p.x - pc.x,
+                    oy: p.y - pc.y,
+                  }
                 }}
               >
                 <rect
@@ -385,23 +445,36 @@ export default function RoomPlanner() {
       {showModal && (
         <div
           style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             zIndex: 50,
           }}
+          role="presentation"
           onClick={() => setShowModal(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setShowModal(false)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
             style={{
-              background: 'white', border: '1px solid black',
-              padding: 24, display: 'flex', flexDirection: 'column', gap: 12,
-              fontFamily: 'monospace', minWidth: 260,
+              background: 'white',
+              border: '1px solid black',
+              padding: 24,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+              fontFamily: 'monospace',
+              minWidth: 260,
             }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <div style={{ fontWeight: 'bold', fontSize: 13 }}>Send Design</div>
             <input
-              autoFocus
               placeholder="Your name"
               value={senderName}
               onChange={(e) => setSenderName(e.target.value)}
@@ -412,8 +485,11 @@ export default function RoomPlanner() {
                 }
               }}
               style={{
-                border: '1px solid black', padding: '4px 8px',
-                fontFamily: 'monospace', fontSize: 12, outline: 'none',
+                border: '1px solid black',
+                padding: '4px 8px',
+                fontFamily: 'monospace',
+                fontSize: 12,
+                outline: 'none',
               }}
             />
             <div style={{ display: 'flex', gap: 8 }}>
