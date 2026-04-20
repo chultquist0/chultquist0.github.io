@@ -53,10 +53,17 @@ export default function RoomPlanner() {
     oy: number
   } | null>(null)
 
-  const onMove = useCallback((e: MouseEvent) => {
+  const getXY = (e: MouseEvent | TouchEvent) => {
+    const t = 'touches' in e ? (e.touches[0] ?? e.changedTouches[0]) : e
+    return { clientX: t.clientX, clientY: t.clientY }
+  }
+
+  const onMove = useCallback((e: MouseEvent | TouchEvent) => {
     const d = dragRef.current
     if (!d) return
-    const p = toSVG(svgRef.current, e.clientX, e.clientY)
+    if ('touches' in e) e.preventDefault()
+    const { clientX, clientY } = getXY(e)
+    const p = toSVG(svgRef.current, clientX, clientY)
     if (d.mode === 'palette') {
       setGhost(p ? { x: p.x, y: p.y, type: d.type } : null)
     } else if (d.mode === 'item' && p) {
@@ -66,20 +73,16 @@ export default function RoomPlanner() {
     }
   }, [])
 
-  const onUp = useCallback((e: MouseEvent) => {
+  const onUp = useCallback((e: MouseEvent | TouchEvent) => {
     const d = dragRef.current
     if (!d) return
     if (d.mode === 'palette') {
+      const { clientX, clientY } = getXY(e)
       const svg = svgRef.current
       if (svg) {
         const r = svg.getBoundingClientRect()
-        if (
-          e.clientX >= r.left &&
-          e.clientX <= r.right &&
-          e.clientY >= r.top &&
-          e.clientY <= r.bottom
-        ) {
-          const p = toSVG(svg, e.clientX, e.clientY)!
+        if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+          const p = toSVG(svg, clientX, clientY)!
           const id = uid++
           setPieces((prev) => [...prev, { id, type: d.type, x: p.x, y: p.y, rot: 0 }])
           setSel(id)
@@ -93,9 +96,13 @@ export default function RoomPlanner() {
   useEffect(() => {
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onUp)
     return () => {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
     }
   }, [onMove, onUp])
 
@@ -223,6 +230,13 @@ export default function RoomPlanner() {
                 e.preventDefault()
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
                 const p = toSVG(svgRef.current, e.clientX, e.clientY)
+                setGhost(p ? { x: p.x, y: p.y, type } : null)
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault()
+                const t = e.touches[0]
+                dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
+                const p = toSVG(svgRef.current, t.clientX, t.clientY)
                 setGhost(p ? { x: p.x, y: p.y, type } : null)
               }}
             >
@@ -364,6 +378,20 @@ export default function RoomPlanner() {
                   e.stopPropagation()
                   setSel(pc.id)
                   const p = toSVG(svgRef.current, e.clientX, e.clientY)!
+                  dragRef.current = {
+                    mode: 'item',
+                    type: pc.type,
+                    pieceId: pc.id,
+                    ox: p.x - pc.x,
+                    oy: p.y - pc.y,
+                  }
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setSel(pc.id)
+                  const t = e.touches[0]
+                  const p = toSVG(svgRef.current, t.clientX, t.clientY)!
                   dragRef.current = {
                     mode: 'item',
                     type: pc.type,
