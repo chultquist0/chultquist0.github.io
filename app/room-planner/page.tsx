@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState, useEffect, useCallback } from 'react'
+import emailjs from '@emailjs/browser'
 
 const S = 30 // px per foot
 const ROOM = 15 * S // 450
@@ -104,37 +105,46 @@ export default function RoomPlanner() {
     setSel(null)
   }
 
-  const sendDesign = () => {
+  const [sending, setSending] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
+
+  const sendDesign = async () => {
     const svg = svgRef.current
     if (!svg) return
-    const clone = svg.cloneNode(true) as SVGSVGElement
-    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-    const svgStr = new XMLSerializer().serializeToString(clone)
-    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const canvas = document.createElement('canvas')
-    canvas.width = VW * 2
-    canvas.height = VH * 2
-    const ctx = canvas.getContext('2d')!
-    const img = new Image()
-    img.onload = () => {
-      ctx.fillStyle = 'white'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-      URL.revokeObjectURL(url)
-      const a = document.createElement('a')
-      a.download = 'room-layout.png'
-      a.href = canvas.toDataURL('image/png')
-      a.click()
-      setTimeout(
-        () =>
-          window.open(
-            'mailto:charlie.hultquist@berkeley.edu?subject=Room%20Layout%20Plan&body=See%20attached%20room-layout.png'
-          ),
-        400
+    setSending('sending')
+    try {
+      const clone = svg.cloneNode(true) as SVGSVGElement
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+      const svgStr = new XMLSerializer().serializeToString(clone)
+      const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const canvas = document.createElement('canvas')
+      canvas.width = VW
+      canvas.height = VH
+      const ctx = canvas.getContext('2d')!
+      await new Promise<void>((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => {
+          ctx.fillStyle = 'white'
+          ctx.fillRect(0, 0, VW, VH)
+          ctx.drawImage(img, 0, 0, VW, VH)
+          URL.revokeObjectURL(url)
+          resolve()
+        }
+        img.onerror = reject
+        img.src = url
+      })
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        { image: canvas.toDataURL('image/png') },
+        { publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY! }
       )
+      setSending('done')
+      setTimeout(() => setSending('idle'), 3000)
+    } catch {
+      setSending('error')
+      setTimeout(() => setSending('idle'), 3000)
     }
-    img.src = url
   }
 
   return (
@@ -209,7 +219,9 @@ export default function RoomPlanner() {
         )}
 
         <div style={{ padding: 12, borderTop: '1px solid black' }}>
-          <Btn onClick={sendDesign}>Send Design</Btn>
+          <Btn onClick={sendDesign} disabled={sending !== 'idle'}>
+            {sending === 'sending' ? 'Sending…' : sending === 'done' ? 'Sent!' : sending === 'error' ? 'Error' : 'Send Design'}
+          </Btn>
         </div>
         <div style={{ padding: '8px 14px', borderTop: '1px solid black', fontSize: 10, color: '#666', lineHeight: 1.5 }}>
           Drag to place.
@@ -255,21 +267,21 @@ export default function RoomPlanner() {
           >
             15 ft
           </text>
-          {/* Door on right wall — 3 ft wide, 0.5 ft from bottom wall, opens toward bottom wall */}
+          {/* Door on right wall — 3 ft wide, 0.5 ft from bottom wall, hinge at bottom, arc sweeps up */}
           {(() => {
             const DW = 3 * S
             const hx = OX + ROOM             // right wall x
-            const yBot = OY + ROOM - S / 2   // bottom of opening (0.5 ft above bottom wall)
-            const yTop = yBot - DW           // top of opening = hinge
+            const yBot = OY + ROOM - S / 2   // hinge (bottom of opening, 0.5 ft above bottom wall)
+            const yTop = yBot - DW           // top of opening
             return (
               <g>
                 {/* erase right wall stroke over the opening */}
                 <rect x={hx - 2} y={yTop} width={4} height={DW} fill="white" />
-                {/* door panel: from hinge going left into room */}
-                <line x1={hx} y1={yTop} x2={hx - DW} y2={yTop} stroke="black" strokeWidth="1.5" />
-                {/* swing arc: curves clockwise downward toward bottom wall */}
+                {/* door panel: from hinge (bottom) going left into room */}
+                <line x1={hx} y1={yBot} x2={hx - DW} y2={yBot} stroke="black" strokeWidth="1.5" />
+                {/* swing arc: curves counterclockwise upward */}
                 <path
-                  d={`M ${hx - DW} ${yTop} A ${DW} ${DW} 0 0 1 ${hx} ${yBot}`}
+                  d={`M ${hx - DW} ${yBot} A ${DW} ${DW} 0 0 0 ${hx} ${yTop}`}
                   fill="none"
                   stroke="black"
                   strokeWidth="1"
@@ -368,19 +380,29 @@ export default function RoomPlanner() {
   )
 }
 
-function Btn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function Btn({
+  onClick,
+  children,
+  disabled,
+}: {
+  onClick: () => void
+  children: React.ReactNode
+  disabled?: boolean
+}) {
   const [hov, setHov] = useState(false)
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
         border: '1px solid black',
         padding: '4px 8px',
-        background: hov ? 'black' : 'white',
-        color: hov ? 'white' : 'black',
-        cursor: 'pointer',
+        background: !disabled && hov ? 'black' : 'white',
+        color: !disabled && hov ? 'white' : 'black',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
         fontSize: 12,
         fontFamily: 'monospace',
       }}
