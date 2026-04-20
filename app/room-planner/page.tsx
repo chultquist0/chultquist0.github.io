@@ -454,8 +454,7 @@ export default function RoomPlanner() {
             zIndex: 50,
           }}
           role="presentation"
-          aria-modal="true"
-          onClick={() => setShowModal(false)}
+          onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
           onKeyDown={(e) => e.key === 'Escape' && setShowModal(false)}
         >
           <div
@@ -469,7 +468,6 @@ export default function RoomPlanner() {
               fontFamily: 'monospace',
               minWidth: 260,
             }}
-            onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
             <div style={{ fontWeight: 'bold', fontSize: 13 }}>Send Design</div>
