@@ -43,7 +43,10 @@ export default function RoomPlanner() {
   const [pieces, setPieces] = useState<Piece[]>([])
   const [sel, setSel] = useState<number | null>(null)
   const [ghost, setGhost] = useState<{ x: number; y: number; type: FType } | null>(null)
+  const [htmlGhost, setHtmlGhost] = useState<{ x: number; y: number; type: FType } | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
+  const rafRef = useRef<number | null>(null)
 
   const dragRef = useRef<{
     mode: 'palette' | 'item'
@@ -52,6 +55,13 @@ export default function RoomPlanner() {
     ox: number
     oy: number
   } | null>(null)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 700)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const getXY = (e: MouseEvent | TouchEvent) => {
     const t = 'touches' in e ? (e.touches[0] ?? e.changedTouches[0]) : e
@@ -63,19 +73,27 @@ export default function RoomPlanner() {
     if (!d) return
     if ('touches' in e) e.preventDefault()
     const { clientX, clientY } = getXY(e)
-    const p = toSVG(svgRef.current, clientX, clientY)
-    if (d.mode === 'palette') {
-      setGhost(p ? { x: p.x, y: p.y, type: d.type } : null)
-    } else if (d.mode === 'item' && p) {
-      setPieces((prev) =>
-        prev.map((pc) => (pc.id === d.pieceId ? { ...pc, x: p.x - d.ox, y: p.y - d.oy } : pc))
-      )
-    }
+    // HTML ghost updates immediately for snappy feel
+    if (d.mode === 'palette') setHtmlGhost({ x: clientX, y: clientY, type: d.type })
+    // RAF-throttle the SVG state updates for smoothness
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(() => {
+      const p = toSVG(svgRef.current, clientX, clientY)
+      if (d.mode === 'palette') {
+        setGhost(p ? { x: p.x, y: p.y, type: d.type } : null)
+      } else if (d.mode === 'item' && p) {
+        setPieces((prev) =>
+          prev.map((pc) => (pc.id === d.pieceId ? { ...pc, x: p.x - d.ox, y: p.y - d.oy } : pc))
+        )
+      }
+    })
   }, [])
 
   const onUp = useCallback((e: MouseEvent | TouchEvent) => {
     const d = dragRef.current
     if (!d) return
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    setHtmlGhost(null)
     if (d.mode === 'palette') {
       const { clientX, clientY } = getXY(e)
       const svg = svgRef.current
@@ -164,49 +182,90 @@ export default function RoomPlanner() {
     }
   }
 
+  const placedTypes = new Set(pieces.map((p) => p.type))
+  const unplacedDefs = (Object.entries(DEFS) as [FType, (typeof DEFS)[FType]][]).filter(
+    ([type]) => !placedTypes.has(type)
+  )
+
   return (
     <div
       style={{
         display: 'flex',
-        height: 'calc(100vh - 10rem)',
-        minHeight: 480,
+        flexDirection: isMobile ? 'column' : 'row',
+        height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 10rem)',
+        minHeight: 0,
         fontFamily: 'monospace',
         userSelect: 'none',
         color: 'black',
         background: 'white',
       }}
     >
-      {/* Sidebar */}
+      {/* HTML ghost — follows finger immediately anywhere on screen */}
+      {htmlGhost && (
+        <div
+          style={{
+            position: 'fixed',
+            left: htmlGhost.x,
+            top: htmlGhost.y,
+            transform: 'translate(-50%,-50%)',
+            width: DEFS[htmlGhost.type].w * 0.5,
+            height: DEFS[htmlGhost.type].h * 0.5,
+            border: '1.5px dashed black',
+            background: 'rgba(255,255,255,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 10,
+            fontFamily: 'monospace',
+            textAlign: 'center',
+            whiteSpace: 'pre-line',
+            pointerEvents: 'none',
+            zIndex: 100,
+            opacity: 0.85,
+          }}
+        >
+          {DEFS[htmlGhost.type].label}
+        </div>
+      )}
+
+      {/* Sidebar — order:2 on mobile so SVG appears above it */}
       <div
         style={{
-          width: 160,
-          borderRight: '1px solid black',
+          order: isMobile ? 2 : undefined,
+          width: isMobile ? '100%' : 160,
+          height: isMobile ? 'auto' : undefined,
+          borderRight: isMobile ? undefined : '1px solid black',
+          borderTop: isMobile ? '1px solid black' : undefined,
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: isMobile ? 'row' : 'column',
           flexShrink: 0,
+          overflowX: isMobile ? 'auto' : undefined,
         }}
       >
+        {!isMobile && (
+          <div
+            style={{
+              padding: '10px 14px',
+              borderBottom: '1px solid black',
+              fontWeight: 'bold',
+              fontSize: 13,
+            }}
+          >
+            Furniture
+          </div>
+        )}
         <div
           style={{
-            padding: '10px 14px',
-            borderBottom: '1px solid black',
-            fontWeight: 'bold',
-            fontSize: 13,
-          }}
-        >
-          Furniture
-        </div>
-        <div
-          style={{
-            flex: 1,
-            padding: 14,
+            flex: isMobile ? undefined : 1,
+            padding: isMobile ? '8px 10px' : 14,
             display: 'flex',
-            flexDirection: 'column',
-            gap: 14,
-            overflowY: 'auto',
+            flexDirection: isMobile ? 'row' : 'column',
+            gap: isMobile ? 10 : 14,
+            overflowY: isMobile ? undefined : 'auto',
+            alignItems: isMobile ? 'center' : undefined,
           }}
         >
-          {(Object.entries(DEFS) as [FType, (typeof DEFS)[FType]][]).map(([type, def]) => (
+          {unplacedDefs.map(([type, def]) => (
             <div
               key={type}
               role="button"
@@ -229,6 +288,7 @@ export default function RoomPlanner() {
               onMouseDown={(e) => {
                 e.preventDefault()
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
+                setHtmlGhost({ x: e.clientX, y: e.clientY, type })
                 const p = toSVG(svgRef.current, e.clientX, e.clientY)
                 setGhost(p ? { x: p.x, y: p.y, type } : null)
               }}
@@ -236,6 +296,7 @@ export default function RoomPlanner() {
                 e.preventDefault()
                 const t = e.touches[0]
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
+                setHtmlGhost({ x: t.clientX, y: t.clientY, type })
                 const p = toSVG(svgRef.current, t.clientX, t.clientY)
                 setGhost(p ? { x: p.x, y: p.y, type } : null)
               }}
@@ -248,14 +309,17 @@ export default function RoomPlanner() {
         {sel !== null && selPiece && (
           <div
             style={{
-              padding: 12,
-              borderTop: '1px solid black',
+              padding: isMobile ? '8px 10px' : 12,
+              borderTop: isMobile ? undefined : '1px solid black',
+              borderLeft: isMobile ? '1px solid black' : undefined,
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: isMobile ? 'row' : 'column',
               gap: 8,
+              alignItems: isMobile ? 'center' : undefined,
+              flexShrink: 0,
             }}
           >
-            <div style={{ fontSize: 11 }}>Rotate: {selPiece.rot}°</div>
+            {!isMobile && <div style={{ fontSize: 11 }}>Rotate: {selPiece.rot}°</div>}
             <input
               type="range"
               min={0}
@@ -263,7 +327,7 @@ export default function RoomPlanner() {
               step={5}
               value={selPiece.rot}
               onChange={(e) => setRot(Number(e.target.value))}
-              style={{ width: '100%', accentColor: 'black' }}
+              style={{ width: isMobile ? 80 : '100%', accentColor: 'black' }}
             />
             <Btn onClick={del}>Delete</Btn>
           </div>
@@ -280,25 +344,29 @@ export default function RoomPlanner() {
                   : 'Send Design'}
           </Btn>
         </div>
-        <div
-          style={{
-            padding: '8px 14px',
-            borderTop: '1px solid black',
-            fontSize: 10,
-            color: '#666',
-            lineHeight: 1.5,
-          }}
-        >
-          Drag to place.
-          <br />
-          Click to select.
-        </div>
+        {!isMobile && (
+          <div
+            style={{
+              padding: '8px 14px',
+              borderTop: '1px solid black',
+              fontSize: 10,
+              color: '#666',
+              lineHeight: 1.5,
+            }}
+          >
+            Drag to place.
+            <br />
+            Click to select.
+          </div>
+        )}
       </div>
 
-      {/* SVG canvas */}
+      {/* SVG canvas — order:1 on mobile so it appears above the sidebar */}
       <div
         style={{
+          order: isMobile ? 1 : undefined,
           flex: 1,
+          minHeight: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
