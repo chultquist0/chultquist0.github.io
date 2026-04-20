@@ -281,7 +281,7 @@ export default function RoomPlanner() {
                 <line x1={hx} y1={yBot} x2={hx - DW} y2={yBot} stroke="black" strokeWidth="1.5" />
                 {/* swing arc: curves counterclockwise upward */}
                 <path
-                  d={`M ${hx - DW} ${yBot} A ${DW} ${DW} 0 0 0 ${hx} ${yTop}`}
+                  d={`M ${hx - DW} ${yBot} A ${DW} ${DW} 0 0 1 ${hx} ${yTop}`}
                   fill="none"
                   stroke="black"
                   strokeWidth="1"
