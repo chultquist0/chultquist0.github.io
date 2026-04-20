@@ -468,7 +468,6 @@ export default function RoomPlanner() {
               fontFamily: 'monospace',
               minWidth: 260,
             }}
-            onKeyDown={(e) => e.stopPropagation()}
           >
             <div style={{ fontWeight: 'bold', fontSize: 13 }}>Send Design</div>
             <input
