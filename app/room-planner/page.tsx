@@ -104,24 +104,37 @@ export default function RoomPlanner() {
     setSel(null)
   }
 
-  const sendEmail = () => {
-    const lines = pieces.map((pc) => {
-      const def = DEFS[pc.type]
-      const xFt = ((pc.x - OX) / S).toFixed(1)
-      const yFt = ((pc.y - OY) / S).toFixed(1)
-      return `  • ${def.label.replace('\n', ' ')}: ${xFt} ft from left, ${yFt} ft from top, rotated ${pc.rot}°`
-    })
-    const body = [
-      'Room Layout Plan (15×15 ft with bay window)',
-      '============================================',
-      '',
-      pieces.length === 0 ? '  (no furniture placed)' : lines.join('\n'),
-      '',
-      'View the planner: https://chultquist0.github.io/room-planner',
-    ].join('\n')
-    window.open(
-      `mailto:charlie.hultquist@berkeley.edu?subject=Room%20Layout%20Plan&body=${encodeURIComponent(body)}`
-    )
+  const sendDesign = () => {
+    const svg = svgRef.current
+    if (!svg) return
+    const clone = svg.cloneNode(true) as SVGSVGElement
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    const svgStr = new XMLSerializer().serializeToString(clone)
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const canvas = document.createElement('canvas')
+    canvas.width = VW * 2
+    canvas.height = VH * 2
+    const ctx = canvas.getContext('2d')!
+    const img = new Image()
+    img.onload = () => {
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      const a = document.createElement('a')
+      a.download = 'room-layout.png'
+      a.href = canvas.toDataURL('image/png')
+      a.click()
+      setTimeout(
+        () =>
+          window.open(
+            'mailto:charlie.hultquist@berkeley.edu?subject=Room%20Layout%20Plan&body=See%20attached%20room-layout.png'
+          ),
+        400
+      )
+    }
+    img.src = url
   }
 
   return (
@@ -196,7 +209,7 @@ export default function RoomPlanner() {
         )}
 
         <div style={{ padding: 12, borderTop: '1px solid black' }}>
-          <Btn onClick={sendEmail}>Send Design</Btn>
+          <Btn onClick={sendDesign}>Send Design</Btn>
         </div>
         <div style={{ padding: '8px 14px', borderTop: '1px solid black', fontSize: 10, color: '#666', lineHeight: 1.5 }}>
           Drag to place.
@@ -242,21 +255,21 @@ export default function RoomPlanner() {
           >
             15 ft
           </text>
-          {/* Door on right wall, near bottom — 3 ft wide, hinged at top of opening, swings inward */}
+          {/* Door on right wall — 3 ft wide, 0.5 ft from bottom wall, opens toward bottom wall */}
           {(() => {
             const DW = 3 * S
-            const hx = OX + ROOM        // right wall x
-            const hy = OY + ROOM        // bottom of opening
-            const hinge = hy - DW       // top of opening = hinge point
+            const hx = OX + ROOM             // right wall x
+            const yBot = OY + ROOM - S / 2   // bottom of opening (0.5 ft above bottom wall)
+            const yTop = yBot - DW           // top of opening = hinge
             return (
               <g>
-                {/* erase wall stroke over the opening */}
-                <rect x={hx - 2} y={hinge} width={4} height={DW} fill="white" />
-                {/* door panel: hinge → left, perpendicular into room */}
-                <line x1={hx} y1={hinge} x2={hx - DW} y2={hinge} stroke="black" strokeWidth="1.5" />
-                {/* swing arc: panel end curves down to bottom of opening */}
+                {/* erase right wall stroke over the opening */}
+                <rect x={hx - 2} y={yTop} width={4} height={DW} fill="white" />
+                {/* door panel: from hinge going left into room */}
+                <line x1={hx} y1={yTop} x2={hx - DW} y2={yTop} stroke="black" strokeWidth="1.5" />
+                {/* swing arc: curves clockwise downward toward bottom wall */}
                 <path
-                  d={`M ${hx - DW} ${hinge} A ${DW} ${DW} 0 0 1 ${hx} ${hy}`}
+                  d={`M ${hx - DW} ${yTop} A ${DW} ${DW} 0 0 1 ${hx} ${yBot}`}
                   fill="none"
                   stroke="black"
                   strokeWidth="1"
