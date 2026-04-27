@@ -5,11 +5,10 @@ import emailjs from '@emailjs/browser'
 // Room measured in inches. Scale to pixels.
 const S = 3 // px per inch
 
-// The bay window arc extends 33" left of x=0, so we offset everything right.
-const OX = 33 * S + 20 // left margin: bay protrusion + padding
-const OY = 20 // top margin
+// Bay window arc extends 33" left of x=0, so offset everything right.
+const OX = 33 * S + 20
+const OY = 100 // arc peaks at y=220.6", 30.6" above top wall
 
-// Room extents: x=0..122, y=0..190 (math coords, y-up)
 const VW = OX + 122 * S + 20
 const VH = OY + 190 * S + 20
 
@@ -17,8 +16,6 @@ const VH = OY + 190 * S + 20
 const rx = (x: number) => OX + x * S
 const ry = (y: number) => OY + (190 - y) * S
 
-// Bay window: circle center (30, 157.6), radius 63"
-// Arc from (84,190) to (0,102) — large clockwise arc in screen coords (y-flipped)
 const ROOM_PATH = [
   `M ${rx(0)} ${ry(0)}`,
   `L ${rx(33)} ${ry(0)}`,
@@ -26,16 +23,30 @@ const ROOM_PATH = [
   `L ${rx(122)} ${ry(25)}`,
   `L ${rx(122)} ${ry(190)}`,
   `L ${rx(84)} ${ry(190)}`,
-  `A ${63 * S} ${63 * S} 0 1 1 ${rx(0)} ${ry(102)}`,
+  `A ${63 * S} ${63 * S} 0 1 0 ${rx(0)} ${ry(102)}`,
   `L ${rx(0)} ${ry(0)} Z`,
 ].join(' ')
 
 const DEFS = {
   bed: { label: 'Bed\n(Full)', w: Math.round(54 * S), h: Math.round(75 * S) }, // 54"×75"
-  desk: { label: 'Desk', w: Math.round(48 * S), h: Math.round(24 * S) }, // 48"×24"
+  desk: { label: 'Desk', w: Math.round(31 * S), h: Math.round(55 * S) }, // 31"×55"
+  loveSeat: { label: 'Love Seat', w: Math.round(46 * S), h: Math.round(60 * S) }, // 52"×30"
+  dresserA: { label: 'Dresser (Option A)', w: Math.round(48 * S), h: Math.round(21 * S) }, // 36"×18"
+  dresserB: { label: 'Dresser (Option B)', w: Math.round(36 * S), h: Math.round(20 * S) }, // 36"×18"
+  dresserC: { label: 'Dresser\n(Option C)', w: Math.round(28 * S), h: Math.round(15 * S) }, // 31"×18"
+  nightstand: { label: 'Night-\nstand', w: Math.round(13 * S), h: Math.round(13 * S) }, // 24"×24"
+  plantStand1: { label: 'Plant\nStand 1', w: Math.round(15 * S), h: Math.round(15 * S) }, // 14"×14"
+  plantStand2: { label: 'Plant\nStand 2', w: Math.round(15 * S), h: Math.round(15 * S) }, // 14"×14"
+  plantStand3: { label: 'Plant\nStand 3', w: Math.round(20 * S), h: Math.round(5 * S) }, // 14"×14"
+  roomDivider: { label: 'Room Divider', w: Math.round(48 * S), h: Math.round(1 * S) }, // 48"×1"
+  deskChair: { label: 'Desk\nChair', w: Math.round(24 * S), h: Math.round(15 * S) }, // 24"×15"
+  funChair: { label: 'Fun Chair', w: Math.round(25 * S), h: Math.round(25 * S) }, // 20"×20"
+  organizingCabinet: { label: 'Organizing\nCabinet', w: Math.round(24 * S), h: Math.round(12 * S) }, // 30"×15"
 } as const
 
 type FType = keyof typeof DEFS
+
+const TEXT_ABOVE = new Set<FType>(['plantStand3', 'roomDivider'])
 
 interface Piece {
   id: number
@@ -207,7 +218,7 @@ export default function RoomPlanner() {
       style={{
         display: 'flex',
         flexDirection: isMobile ? 'column' : 'row',
-        height: isMobile ? 'calc(100dvh - 9rem)' : 'calc(100vh - 10rem)',
+        height: '100dvh',
         overflow: 'hidden',
         minHeight: 0,
         fontFamily: 'monospace',
@@ -259,44 +270,85 @@ export default function RoomPlanner() {
               : undefined,
           }}
         >
-          {unplacedDefs.map(([type, def]) => (
-            <div
-              key={type}
-              role="button"
-              tabIndex={0}
-              title={`Drag to place ${def.label}`}
-              style={{
-                width: def.w * 0.65,
-                height: def.h * 0.65,
-                border: '1px solid black',
-                cursor: 'grab',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 10,
-                textAlign: 'center',
-                lineHeight: 1.4,
-                whiteSpace: 'pre-line',
-                flexShrink: 0,
-              }}
-              onKeyDown={() => {}}
-              onMouseDown={(e) => {
+          {unplacedDefs.map(([type, def]) => {
+            const scaledW = def.w * 0.65
+            const scaledH = def.h * 0.65
+            const small = scaledW < 50 || scaledH < 20
+            const handlers = {
+              onKeyDown: () => {},
+              onMouseDown: (e: React.MouseEvent) => {
                 e.preventDefault()
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
                 const p = toSVG(svgRef.current, e.clientX, e.clientY)
                 setGhost(p ? { x: p.x, y: p.y, type } : null)
-              }}
-              onTouchStart={(e) => {
+              },
+              onTouchStart: (e: React.TouchEvent) => {
                 e.preventDefault()
                 const t = e.touches[0]
                 dragRef.current = { mode: 'palette', type, ox: 0, oy: 0 }
                 const p = toSVG(svgRef.current, t.clientX, t.clientY)
                 setGhost(p ? { x: p.x, y: p.y, type } : null)
-              }}
-            >
-              {def.label}
-            </div>
-          ))}
+              },
+            }
+            if (small) {
+              return (
+                <div
+                  key={type}
+                  role="button"
+                  tabIndex={0}
+                  title={`Drag to place ${def.label}`}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    cursor: 'grab',
+                    flexShrink: 0,
+                  }}
+                  {...handlers}
+                >
+                  <div
+                    style={{
+                      width: scaledW,
+                      height: Math.max(scaledH, 12),
+                      border: '1px solid black',
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ fontSize: 8, lineHeight: 1.3, whiteSpace: 'nowrap' }}>
+                    {def.label}
+                  </span>
+                </div>
+              )
+            }
+            return (
+              <div
+                key={type}
+                role="button"
+                tabIndex={0}
+                title={`Drag to place ${def.label}`}
+                style={{
+                  width: scaledW,
+                  height: scaledH,
+                  border: '1px solid black',
+                  cursor: 'grab',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 8,
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                  wordBreak: 'break-word',
+                  overflow: 'hidden',
+                  padding: '2px',
+                  flexShrink: 0,
+                }}
+                {...handlers}
+              >
+                {def.label}
+              </div>
+            )
+          })}
         </div>
 
         {/* Controls row — always rendered so sidebar height stays constant on mobile */}
@@ -351,23 +403,6 @@ export default function RoomPlanner() {
                   : 'Send Design'}
           </Btn>
         </div>
-
-        {/* Desktop hint */}
-        {!isMobile && (
-          <div
-            style={{
-              padding: '8px 14px',
-              borderTop: '1px solid black',
-              fontSize: 10,
-              color: '#666',
-              lineHeight: 1.5,
-            }}
-          >
-            Drag to place.
-            <br />
-            Click to select.
-          </div>
-        )}
       </div>
 
       {/* SVG canvas — order:1 on mobile so it appears above the sidebar */}
@@ -393,6 +428,39 @@ export default function RoomPlanner() {
         >
           {/* Room shape */}
           <path d={ROOM_PATH} fill="white" stroke="black" strokeWidth="2" />
+
+          {/* Closet (x=33..122, y=0..25) — solid: bottom+right walls, dashed: top+left walls */}
+          <line x1={rx(33)} y1={ry(0)} x2={rx(122)} y2={ry(0)} stroke="black" strokeWidth="2" />
+          <line x1={rx(122)} y1={ry(0)} x2={rx(122)} y2={ry(25)} stroke="black" strokeWidth="2" />
+          <line
+            x1={rx(33)}
+            y1={ry(25)}
+            x2={rx(122)}
+            y2={ry(25)}
+            stroke="black"
+            strokeWidth="2"
+            strokeDasharray="5,3"
+          />
+          <line
+            x1={rx(33)}
+            y1={ry(0)}
+            x2={rx(33)}
+            y2={ry(25)}
+            stroke="black"
+            strokeWidth="2"
+            strokeDasharray="5,3"
+          />
+          <text
+            x={(rx(33) + rx(122)) / 2}
+            y={(ry(0) + ry(25)) / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="9"
+            fontFamily="monospace"
+            fill="#555"
+          >
+            Closet
+          </text>
 
           {/* Door: right wall x=122, gap y=50..87 (math). Hinge at y=50, opens inward (left). */}
           {(() => {
@@ -467,9 +535,13 @@ export default function RoomPlanner() {
                   <text
                     key={i}
                     textAnchor="middle"
-                    y={(i - (lines.length - 1) / 2) * 14}
+                    y={
+                      TEXT_ABOVE.has(pc.type)
+                        ? -def.h / 2 - 4 - (lines.length - 1 - i) * 11
+                        : (i - (lines.length - 1) / 2) * 11
+                    }
                     dominantBaseline="middle"
-                    fontSize="11"
+                    fontSize="9"
                     fontFamily="monospace"
                     fill="black"
                     style={{ pointerEvents: 'none' }}
@@ -550,6 +622,9 @@ export default function RoomPlanner() {
             }}
           >
             <div style={{ fontWeight: 'bold', fontSize: 13 }}>Send Design</div>
+            <div style={{ fontSize: 10, color: '#666' }}>
+              Please don&apos;t spam - I only get 200 free emails/month
+            </div>
             <input
               placeholder="Your name"
               value={senderName}
