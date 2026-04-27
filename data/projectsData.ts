@@ -13,7 +13,7 @@ const projectsData: Project[] = [
   },
   {
     title: 'ATLAS',
-    description: `All Things Leave A Smudge!`,
+    description: `The world's largest particle detector, located at the Large Hadron Collider at CERN. `,
     imgSrc: '/static/images/atlas.png',
     href: 'https://www.physics.lbl.gov/atlas/',
   },
@@ -25,7 +25,7 @@ const projectsData: Project[] = [
   },
   {
     title: 'Randomized Circuits',
-    description: `A random grid array of resistors, capacitors, inductors, and diodes ... much to think about `,
+    description: `What are the electrical properties of a random grid array of resistors, capacitors, inductors, and diodes? `,
     imgSrc: '/static/images/sniping.png',
     href: 'https://github.com/chultquist0/pairproject482/blob/main/Circuit.ipynb',
   },
