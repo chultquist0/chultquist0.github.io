@@ -463,14 +463,14 @@ export default function RoomPlanner() {
             const seg = arcSpan / 4
             return (
               <>
-                {/* Left wall window: 33" centered at y=51 */}
+                {/* Left wall window: 33" centered at y=51 — double glass lines */}
                 <line
                   x1={rx(0)}
                   y1={ry(67.5)}
                   x2={rx(0)}
                   y2={ry(34.5)}
                   stroke="white"
-                  strokeWidth="4"
+                  strokeWidth="8"
                 />
                 <line
                   x1={rx(0) - 3}
@@ -489,28 +489,58 @@ export default function RoomPlanner() {
                   strokeWidth="1.5"
                 />
                 <line
-                  x1={rx(0)}
+                  x1={rx(0) - 2}
                   y1={ry(67.5)}
-                  x2={rx(0)}
+                  x2={rx(0) - 2}
                   y2={ry(34.5)}
                   stroke="black"
                   strokeWidth="1"
                 />
-                {/* Arc windows: 3 × 26" equidistant */}
+                <line
+                  x1={rx(0) + 2}
+                  y1={ry(67.5)}
+                  x2={rx(0) + 2}
+                  y2={ry(34.5)}
+                  stroke="black"
+                  strokeWidth="1"
+                />
+                {/* Arc windows: 3 × 26" equidistant — double glass arcs */}
                 {[1, 2, 3].map((k) => {
                   const αc = α0 - k * seg
                   const p1 = pt(αc + windowHalf)
                   const p2 = pt(αc - windowHalf)
+                  const p1i = {
+                    x: cx + (R - 3) * Math.cos(toRad(αc + windowHalf)),
+                    y: cy + (R - 3) * Math.sin(toRad(αc + windowHalf)),
+                  }
+                  const p2i = {
+                    x: cx + (R - 3) * Math.cos(toRad(αc - windowHalf)),
+                    y: cy + (R - 3) * Math.sin(toRad(αc - windowHalf)),
+                  }
+                  const p1o = {
+                    x: cx + (R + 3) * Math.cos(toRad(αc + windowHalf)),
+                    y: cy + (R + 3) * Math.sin(toRad(αc + windowHalf)),
+                  }
+                  const p2o = {
+                    x: cx + (R + 3) * Math.cos(toRad(αc - windowHalf)),
+                    y: cy + (R + 3) * Math.sin(toRad(αc - windowHalf)),
+                  }
                   return (
                     <g key={k}>
                       <path
                         d={`M ${p1.x} ${p1.y} A ${R} ${R} 0 0 0 ${p2.x} ${p2.y}`}
                         fill="none"
                         stroke="white"
-                        strokeWidth="5"
+                        strokeWidth="9"
                       />
                       <path
-                        d={`M ${p1.x} ${p1.y} A ${R} ${R} 0 0 0 ${p2.x} ${p2.y}`}
+                        d={`M ${p1i.x} ${p1i.y} A ${R - 3} ${R - 3} 0 0 0 ${p2i.x} ${p2i.y}`}
+                        fill="none"
+                        stroke="black"
+                        strokeWidth="1"
+                      />
+                      <path
+                        d={`M ${p1o.x} ${p1o.y} A ${R + 3} ${R + 3} 0 0 0 ${p2o.x} ${p2o.y}`}
                         fill="none"
                         stroke="black"
                         strokeWidth="1"
