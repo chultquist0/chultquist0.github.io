@@ -253,6 +253,21 @@ export default function RoomPlanner() {
           </div>
         )}
 
+        {/* Description */}
+        {!isMobile && (
+          <div
+            style={{
+              padding: '8px 14px',
+              borderBottom: '1px solid black',
+              fontSize: 10,
+              lineHeight: 1.5,
+              color: '#444',
+            }}
+          >
+            The only thing that is required is the bed. The rest of the space is free to play with.
+          </div>
+        )}
+
         {/* Palette items */}
         <div
           style={{
