@@ -444,6 +444,84 @@ export default function RoomPlanner() {
           {/* Room shape */}
           <path d={ROOM_PATH} fill="white" stroke="black" strokeWidth="2" />
 
+          {/* Windows */}
+          {(() => {
+            const cx = rx(30)
+            const cy = ry(157.6)
+            const R = 63 * S
+            const toRad = (d: number) => (d * Math.PI) / 180
+            const toDeg = (r: number) => (r * 180) / Math.PI
+            const pt = (deg: number) => ({
+              x: cx + R * Math.cos(toRad(deg)),
+              y: cy + R * Math.sin(toRad(deg)),
+            })
+            const α0Raw = toDeg(Math.atan2(ry(190) - cy, rx(84) - cx))
+            const α0 = α0Raw < 0 ? α0Raw + 360 : α0Raw
+            const αEnd = toDeg(Math.atan2(ry(102) - cy, rx(0) - cx))
+            const arcSpan = α0 > αEnd ? α0 - αEnd : α0 + 360 - αEnd
+            const windowHalf = toDeg(26 / (2 * 63))
+            const seg = arcSpan / 4
+            return (
+              <>
+                {/* Left wall window: 33" centered at y=51 */}
+                <line
+                  x1={rx(0)}
+                  y1={ry(67.5)}
+                  x2={rx(0)}
+                  y2={ry(34.5)}
+                  stroke="white"
+                  strokeWidth="4"
+                />
+                <line
+                  x1={rx(0) - 3}
+                  y1={ry(67.5)}
+                  x2={rx(0) + 3}
+                  y2={ry(67.5)}
+                  stroke="black"
+                  strokeWidth="1.5"
+                />
+                <line
+                  x1={rx(0) - 3}
+                  y1={ry(34.5)}
+                  x2={rx(0) + 3}
+                  y2={ry(34.5)}
+                  stroke="black"
+                  strokeWidth="1.5"
+                />
+                <line
+                  x1={rx(0)}
+                  y1={ry(67.5)}
+                  x2={rx(0)}
+                  y2={ry(34.5)}
+                  stroke="black"
+                  strokeWidth="1"
+                />
+                {/* Arc windows: 3 × 26" equidistant */}
+                {[1, 2, 3].map((k) => {
+                  const αc = α0 - k * seg
+                  const p1 = pt(αc + windowHalf)
+                  const p2 = pt(αc - windowHalf)
+                  return (
+                    <g key={k}>
+                      <path
+                        d={`M ${p1.x} ${p1.y} A ${R} ${R} 0 0 0 ${p2.x} ${p2.y}`}
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="5"
+                      />
+                      <path
+                        d={`M ${p1.x} ${p1.y} A ${R} ${R} 0 0 0 ${p2.x} ${p2.y}`}
+                        fill="none"
+                        stroke="black"
+                        strokeWidth="1"
+                      />
+                    </g>
+                  )
+                })}
+              </>
+            )
+          })()}
+
           {/* Closet (x=33..122, y=0..25) — solid: bottom+right walls, dashed: top+left walls */}
           <line x1={rx(33)} y1={ry(0)} x2={rx(122)} y2={ry(0)} stroke="black" strokeWidth="2" />
           <line x1={rx(122)} y1={ry(0)} x2={rx(122)} y2={ry(25)} stroke="black" strokeWidth="2" />
