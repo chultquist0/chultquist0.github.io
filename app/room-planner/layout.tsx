@@ -1,3 +1,20 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Room Planner',
+  description: 'Drag-and-drop furniture layout planner',
+  openGraph: {
+    title: 'Room Planner',
+    description: 'Drag-and-drop furniture layout planner',
+    images: [],
+  },
+  twitter: {
+    title: 'Room Planner',
+    description: 'Drag-and-drop furniture layout planner',
+    card: 'summary',
+  },
+}
+
 export default function RoomPlannerLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
