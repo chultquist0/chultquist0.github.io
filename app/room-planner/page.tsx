@@ -2,20 +2,37 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import emailjs from '@emailjs/browser'
 
-const S = 30 // px per foot
-const ROOM = 15 * S // 450
-const BAY = 6 * S // 240
-const OX = BAY + S // 270
-const OY = BAY + S // 270
-const VW = OX + ROOM + S // 750
-const VH = OY + ROOM + S // 750
+// Room measured in inches. Scale to pixels.
+const S = 3 // px per inch
 
-// Room outline: rectangle with circular bay window extending from top-left corner
-const ROOM_PATH = `M ${OX + BAY} ${OY} A ${BAY} ${BAY} 0 1 0 ${OX} ${OY + BAY} L ${OX} ${OY + ROOM} L ${OX + ROOM} ${OY + ROOM} L ${OX + ROOM} ${OY} Z`
+// The bay window arc extends 33" left of x=0, so we offset everything right.
+const OX = 33 * S + 20 // left margin: bay protrusion + padding
+const OY = 20 // top margin
+
+// Room extents: x=0..122, y=0..190 (math coords, y-up)
+const VW = OX + 122 * S + 20
+const VH = OY + 190 * S + 20
+
+// Convert room math coords (inches, y-up) → SVG screen coords (y-down)
+const rx = (x: number) => OX + x * S
+const ry = (y: number) => OY + (190 - y) * S
+
+// Bay window: circle center (30, 157.6), radius 63"
+// Arc from (84,190) to (0,102) — large clockwise arc in screen coords (y-flipped)
+const ROOM_PATH = [
+  `M ${rx(0)} ${ry(0)}`,
+  `L ${rx(33)} ${ry(0)}`,
+  `L ${rx(33)} ${ry(25)}`,
+  `L ${rx(122)} ${ry(25)}`,
+  `L ${rx(122)} ${ry(190)}`,
+  `L ${rx(84)} ${ry(190)}`,
+  `A ${63 * S} ${63 * S} 0 1 1 ${rx(0)} ${ry(102)}`,
+  `L ${rx(0)} ${ry(0)} Z`,
+].join(' ')
 
 const DEFS = {
-  bed: { label: 'Bed\n(Full)', w: Math.round(4.5 * S), h: Math.round(6.25 * S) }, // 135 x 188
-  desk: { label: 'Desk', w: Math.round(2.25 * S), h: Math.round(3.125 * S) }, // 68 x 94
+  bed: { label: 'Bed\n(Full)', w: Math.round(54 * S), h: Math.round(75 * S) }, // 54"×75"
+  desk: { label: 'Desk', w: Math.round(48 * S), h: Math.round(24 * S) }, // 48"×24"
 } as const
 
 type FType = keyof typeof DEFS
@@ -377,41 +394,16 @@ export default function RoomPlanner() {
           {/* Room shape */}
           <path d={ROOM_PATH} fill="white" stroke="black" strokeWidth="2" />
 
-          {/* Dimension labels */}
-          <text
-            x={OX + ROOM / 2}
-            y={OY + ROOM + 20}
-            textAnchor="middle"
-            fontSize="11"
-            fontFamily="monospace"
-            fill="black"
-          >
-            15 ft
-          </text>
-          <text
-            x={OX + ROOM + 20}
-            y={OY + ROOM / 2}
-            textAnchor="middle"
-            fontSize="11"
-            fontFamily="monospace"
-            fill="black"
-            transform={`rotate(90, ${OX + ROOM + 20}, ${OY + ROOM / 2})`}
-          >
-            15 ft
-          </text>
-          {/* Door on right wall — 3 ft wide, 0.5 ft from bottom wall, hinge at bottom, arc sweeps up */}
+          {/* Door: right wall x=122, gap y=50..87 (math). Hinge at y=50, opens inward (left). */}
           {(() => {
-            const DW = 3 * S
-            const hx = OX + ROOM // right wall x
-            const yBot = OY + ROOM - S / 2 // hinge (bottom of opening, 0.5 ft above bottom wall)
-            const yTop = yBot - DW // top of opening
+            const DW = (87 - 50) * S // 37" door width in px
+            const hx = rx(122)
+            const yBot = ry(50) // hinge — lower in screen (y=50 math)
+            const yTop = ry(87) // top of gap — higher in screen (y=87 math)
             return (
               <g>
-                {/* erase right wall stroke over the opening */}
-                <rect x={hx - 2} y={yTop} width={4} height={DW} fill="white" />
-                {/* door panel: from hinge (bottom) going left into room */}
+                <rect x={hx - 2} y={yTop} width={4} height={yBot - yTop} fill="white" />
                 <line x1={hx} y1={yBot} x2={hx - DW} y2={yBot} stroke="black" strokeWidth="1.5" />
-                {/* swing arc: curves counterclockwise upward */}
                 <path
                   d={`M ${hx - DW} ${yBot} A ${DW} ${DW} 0 0 1 ${hx} ${yTop}`}
                   fill="none"
