@@ -70,6 +70,14 @@ const OUTER_WALL_PATH = wallFacePath(-1)
 
 const DEFS = {
   kivik: { label: 'Kivik', w: Math.round(38 * S), h: Math.round(90 * S) }, // 38"×90"
+  rug: { label: 'Rug', w: Math.round(63 * S), h: Math.round(91.5 * S) }, // 63"×91.5"
+  tv: { label: 'TV', w: Math.round(48.5 * S), h: Math.round(10 * S) }, // 48.5"×10"
+  sonderheim: { label: 'Sonderheim', w: Math.round(39 * S), h: Math.round(73.25 * S) }, // 39"×73.25"
+  ottoman: { label: 'Ottoman', w: Math.round(37 * S), h: Math.round(37 * S) }, // 37"×37"
+  clearance: { label: 'Clearance', w: Math.round(42 * S), h: Math.round(30 * S) }, // 42"×30"
+  poang: { label: 'Poang', w: Math.round(27 * S), h: Math.round(35 * S) }, // 27"×35"
+  bigArmchair: { label: 'Big\nArmchair', w: Math.round(40 * S), h: Math.round(40 * S) }, // 40"×40"
+  floorLamp: { label: 'Floor\nLamp', w: Math.round(20 * S), h: Math.round(20 * S) }, // 20"×20"
 } as const
 
 type FType = keyof typeof DEFS
